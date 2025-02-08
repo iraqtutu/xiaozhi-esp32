@@ -32,14 +32,49 @@ public:
     }
 };
 
+class Ft6336 : public I2cDevice {
+public:
+    struct TouchPoint_t {
+        int num = 0;
+        int x = -1;
+        int y = -1;
+    };
+    
+    Ft6336(i2c_master_bus_handle_t i2c_bus, uint8_t addr) : I2cDevice(i2c_bus, addr) {
+        uint8_t chip_id = ReadReg(0xA3);
+        ESP_LOGI(TAG, "Get chip ID: 0x%02X", chip_id);
+        read_buffer_ = new uint8_t[6];
+    }
+
+    ~Ft6336() {
+        delete[] read_buffer_;
+    }
+
+    void UpdateTouchPoint() {
+        ReadRegs(0x02, read_buffer_, 6);
+        tp_.num = read_buffer_[0] & 0x0F;
+        tp_.x = ((read_buffer_[1] & 0x0F) << 8) | read_buffer_[2];
+        tp_.y = ((read_buffer_[3] & 0x0F) << 8) | read_buffer_[4];
+    }
+
+    const TouchPoint_t& GetTouchPoint() {
+        return tp_;
+    }
+
+private:
+    uint8_t* read_buffer_ = nullptr;
+    TouchPoint_t tp_;
+};
 
 class LichuangDevBoard : public WifiBoard {
 private:
     i2c_master_bus_handle_t i2c_bus_;
     i2c_master_dev_handle_t pca9557_handle_;
+    esp_timer_handle_t touchpad_timer_;
     Button boot_button_;
     LcdDisplay* display_;
     Pca9557* pca9557_;
+    Ft6336* ft6336_;
 
     void InitializeI2c() {
         // Initialize I2C peripheral
@@ -59,6 +94,53 @@ private:
 
         // Initialize PCA9557
         pca9557_ = new Pca9557(i2c_bus_, 0x19);
+    }
+
+    static void touchpad_timer_callback(void* arg) {
+        auto& board = (LichuangDevBoard&)Board::GetInstance();
+        auto touchpad = board.GetTouchpad();
+        static bool was_touched = false;
+        static int64_t touch_start_time = 0;
+        const int64_t TOUCH_THRESHOLD_MS = 500;  // 触摸时长阈值，超过500ms视为长按
+        
+        touchpad->UpdateTouchPoint();
+        auto touch_point = touchpad->GetTouchPoint();
+        
+        // 检测触摸开始
+        if (touch_point.num > 0 && !was_touched) {
+            was_touched = true;
+            board.GetDisplay()->TurnOn();
+            touch_start_time = esp_timer_get_time() / 1000; // 转换为毫秒
+        } 
+        // 检测触摸释放,考虑是否翻页 chenchangjian
+
+        else if (touch_point.num == 0 && was_touched) {
+            was_touched = false;
+            int64_t touch_duration = (esp_timer_get_time() / 1000) - touch_start_time;
+            
+            // 只有短触才触发
+            if (touch_duration < TOUCH_THRESHOLD_MS) {
+                auto& app = Application::GetInstance();
+                app.ToggleChatState();
+            }
+        }
+    }
+
+    void InitializeFt6336TouchPad() {
+        ESP_LOGI(TAG, "Init FT6336");
+        ft6336_ = new Ft6336(i2c_bus_, 0x38);
+        
+        // 创建定时器，10ms 间隔
+        esp_timer_create_args_t timer_args = {
+            .callback = touchpad_timer_callback,
+            .arg = NULL,
+            .dispatch_method = ESP_TIMER_TASK,
+            .name = "touchpad_timer",
+            .skip_unhandled_events = true,
+        };
+        
+        ESP_ERROR_CHECK(esp_timer_create(&timer_args, &touchpad_timer_));
+        ESP_ERROR_CHECK(esp_timer_start_periodic(touchpad_timer_, 10 * 1000)); // 10ms = 10000us
     }
 
     void InitializeSpi() {
@@ -137,8 +219,10 @@ public:
         InitializeI2c();
         InitializeSpi();
         InitializeSt7789Display();
+        InitializeFt6336TouchPad();
         InitializeButtons();
         InitializeIot();
+
     }
 
     virtual AudioCodec* GetAudioCodec() override {
@@ -153,6 +237,10 @@ public:
 
     virtual Display* GetDisplay() override {
         return display_;
+    }
+
+    Ft6336* GetTouchpad() {
+        return ft6336_;
     }
 };
 
