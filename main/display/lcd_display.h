@@ -20,6 +20,12 @@ protected:
     esp_lcd_panel_handle_t panel_ = nullptr;
     gpio_num_t backlight_pin_ = GPIO_NUM_NC;
     bool backlight_output_invert_ = false;
+
+    // 陈昌建
+    bool is_on_ = true;
+    void TurnOn() override;
+    void TurnOff() override;
+
     
     lv_draw_buf_t draw_buf_;
     lv_obj_t* status_bar_ = nullptr;

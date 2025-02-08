@@ -592,17 +592,23 @@ void Application::SetDeviceState(DeviceState state) {
     led->OnStateChanged();
     switch (state) {
         case kDeviceStateUnknown:
+            display->TurnOn();
+            display->SetStatus("未知状态");
+            break;
         case kDeviceStateIdle:
             display->SetStatus("待命");
             display->SetEmotion("neutral");
 #ifdef CONFIG_IDF_TARGET_ESP32S3
             audio_processor_.Stop();
 #endif
+            display->TurnOff();
             break;
         case kDeviceStateConnecting:
+            display->TurnOn();
             display->SetStatus("连接中...");
             break;
         case kDeviceStateListening:
+            display->TurnOn();
             display->SetStatus("聆听中...");
             display->SetEmotion("neutral");
             ResetDecoder();
@@ -613,6 +619,7 @@ void Application::SetDeviceState(DeviceState state) {
             UpdateIotStates();
             break;
         case kDeviceStateSpeaking:
+            display->TurnOn();
             display->SetStatus("说话中...");
             ResetDecoder();
 #if CONFIG_IDF_TARGET_ESP32S3

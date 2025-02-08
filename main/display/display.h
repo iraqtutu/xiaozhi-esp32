@@ -18,6 +18,8 @@ public:
     Display();
     virtual ~Display();
 
+    virtual void TurnOn(){};
+    virtual void TurnOff(){};
     virtual void SetStatus(const std::string &status);
     virtual void ShowNotification(const std::string &notification, int duration_ms = 3000);
     virtual void SetEmotion(const std::string &emotion);

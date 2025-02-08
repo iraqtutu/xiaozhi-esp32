@@ -47,10 +47,14 @@ bool Ota::CheckVersion() {
     auto http = Board::GetInstance().CreateHttp();
     for (const auto& header : headers_) {
         http->SetHeader(header.first, header.second);
+        ESP_LOGI(TAG, "HeaderFirst: %s", header.first.c_str());
+        ESP_LOGI(TAG, "HeaderSecond: %s", header.second.c_str());
     }
 
     http->SetHeader("Content-Type", "application/json");
     std::string method = post_data_.length() > 0 ? "POST" : "GET";
+    ESP_LOGI(TAG, "Check version URL: %s", check_version_url_.c_str());
+    ESP_LOGI(TAG, "Post data: %s", post_data_.c_str());
     if (!http->Open(method, check_version_url_, post_data_)) {
         ESP_LOGE(TAG, "Failed to open HTTP connection");
         delete http;
@@ -66,6 +70,7 @@ bool Ota::CheckVersion() {
     // If it is, set has_new_version_ to true and store the new version and URL
     
     cJSON *root = cJSON_Parse(response.c_str());
+    ESP_LOGI(TAG, "Response: %s", response.c_str());
     if (root == NULL) {
         ESP_LOGE(TAG, "Failed to parse JSON response");
         return false;
@@ -79,6 +84,7 @@ bool Ota::CheckVersion() {
             if (item->type == cJSON_String) {
                 if (settings.GetString(item->string) != item->valuestring) {
                     settings.SetString(item->string, item->valuestring);
+                    // 将返回的mqtt配置写入到settings中
                 }
             }
         }

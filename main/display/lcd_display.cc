@@ -302,3 +302,23 @@ void LcdDisplay::SetIcon(const char* icon) {
     lv_obj_set_style_text_font(emotion_label_, &font_awesome_30_4, 0);
     lv_label_set_text(emotion_label_, icon);
 }
+
+void LcdDisplay::TurnOn() {
+    DisplayLockGuard lock(this);
+    if (is_on_) {
+        return;
+    }
+    ESP_ERROR_CHECK(esp_lcd_panel_disp_on_off(panel_, true));
+    SetBacklight(100);
+    is_on_ = true;
+}
+
+void LcdDisplay::TurnOff() {
+    DisplayLockGuard lock(this);
+    if (!is_on_) {
+        return;
+    }
+    ESP_ERROR_CHECK(esp_lcd_panel_disp_on_off(panel_, false));
+    SetBacklight(0);
+    is_on_ = false;
+}
