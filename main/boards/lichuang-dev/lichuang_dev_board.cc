@@ -128,7 +128,7 @@ private:
 
     void InitializeFt6336TouchPad() {
         ESP_LOGI(TAG, "Init FT6336");
-        ft6336_ = new Ft6336(i2c_bus_, 0x38);
+        ft6336_ = new Ft6336(i2c_bus_, 0x38);       
         
         // 创建定时器，10ms 间隔
         esp_timer_create_args_t timer_args = {
@@ -217,9 +217,9 @@ private:
 public:
     LichuangDevBoard() : boot_button_(BOOT_BUTTON_GPIO) {
         InitializeI2c();
+        InitializeFt6336TouchPad();
         InitializeSpi();
         InitializeSt7789Display();
-        InitializeFt6336TouchPad();
         InitializeButtons();
         InitializeIot();
 
