@@ -125,9 +125,9 @@ private:
        x = DISPLAY_WIDTH - x;
    #endif
    // 如果屏幕镜像已经在显示配置中完成，此处可注释掉对 Y 轴的处理
-   #if defined(DISPLAY_MIRROR_Y) && DISPLAY_MIRROR_Y
+//    #if defined(DISPLAY_MIRROR_Y) && DISPLAY_MIRROR_Y
       y = DISPLAY_HEIGHT - y;
-   #endif
+//    #endif
 
        // 根据是否检测到触摸来设置LVGL的触摸状态
        if (tp.num > 0) {
@@ -156,7 +156,6 @@ private:
             board.GetDisplay()->TurnOn();
             touch_start_time = esp_timer_get_time() / 1000; // 转换为毫秒
         } 
-        // 检测触摸释放,考虑是否翻页 chenchangjian
 
         else if (touch_point.num == 0 && was_touched) {
             was_touched = false;
@@ -174,17 +173,17 @@ private:
         ESP_LOGI(TAG, "Init FT6336");
         ft6336_ = new Ft6336(i2c_bus_, 0x38);
         
-        // // 创建定时器，10ms 间隔
-        // esp_timer_create_args_t timer_args = {
-        //     // .callback = touchpad_timer_callback,
-        //     .arg = NULL,
-        //     .dispatch_method = ESP_TIMER_TASK,
-        //     .name = "touchpad_timer",
-        //     .skip_unhandled_events = true,
-        // };
+        // 创建定时器，10ms 间隔
+        esp_timer_create_args_t timer_args = {
+            .callback = touchpad_timer_callback,
+            .arg = NULL,
+            .dispatch_method = ESP_TIMER_TASK,
+            .name = "touchpad_timer",
+            .skip_unhandled_events = true,
+        };
         
-        // ESP_ERROR_CHECK(esp_timer_create(&timer_args, &touchpad_timer_));
-        // ESP_ERROR_CHECK(esp_timer_start_periodic(touchpad_timer_, 10 * 1000)); // 10ms = 10000us
+        ESP_ERROR_CHECK(esp_timer_create(&timer_args, &touchpad_timer_));
+        ESP_ERROR_CHECK(esp_timer_start_periodic(touchpad_timer_, 10 * 1000)); // 10ms = 10000us
     }
 
     // 【新增】在 LichuangDevBoard 类中添加注册LVGL触摸板的方法
