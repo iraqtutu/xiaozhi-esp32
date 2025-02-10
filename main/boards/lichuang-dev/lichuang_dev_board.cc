@@ -1,3 +1,6 @@
+// 添加LVGL头文件（如果尚未包含）
+#define LV_USE_INDEV 1
+#include <lvgl.h>
 #include "wifi_board.h"
 #include "audio_codecs/box_audio_codec.h"
 #include "display/lcd_display.h"
@@ -14,6 +17,7 @@
 #include <wifi_station.h>
 
 #define TAG "LichuangDevBoard"
+
 
 LV_FONT_DECLARE(font_puhui_20_4);
 LV_FONT_DECLARE(font_awesome_20_4);
@@ -96,6 +100,46 @@ private:
         pca9557_ = new Pca9557(i2c_bus_, 0x19);
     }
 
+    // 当LVGL需要获取触摸屏状态时，会调用该函数
+    // 该函数需要实现通过硬件接口获取触摸屏状态，并返回给LVGL
+    //
+    static void lv_touchpad_read(lv_indev_t *drv, lv_indev_data_t *data) {
+        // 获取板子实例，并获得触摸屏对象
+       auto &board = (LichuangDevBoard&) Board::GetInstance();
+       Ft6336* touchpad = board.GetTouchpad();
+
+       // 更新触摸点数据
+       touchpad->UpdateTouchPoint();
+       const auto &tp = touchpad->GetTouchPoint();
+       
+       int x = tp.x;
+       int y = tp.y;
+       
+       // 根据LVGL显示配置对触摸坐标进行转换
+   #if defined(DISPLAY_SWAP_XY) && DISPLAY_SWAP_XY
+       int tmp = x;
+       x = y;
+       y = tmp;
+   #endif
+   #if defined(DISPLAY_MIRROR_X) && DISPLAY_MIRROR_X
+       x = DISPLAY_WIDTH - x;
+   #endif
+   // 如果屏幕镜像已经在显示配置中完成，此处可注释掉对 Y 轴的处理
+   #if defined(DISPLAY_MIRROR_Y) && DISPLAY_MIRROR_Y
+      y = DISPLAY_HEIGHT - y;
+   #endif
+
+       // 根据是否检测到触摸来设置LVGL的触摸状态
+       if (tp.num > 0) {
+           data->point.x = x;
+           data->point.y = y;
+           data->state = LV_INDEV_STATE_PR;  // 按下状态
+       } else {
+           data->state = LV_INDEV_STATE_REL; // 松开状态
+       }
+    }
+
+    // 该代码不再使用
     static void touchpad_timer_callback(void* arg) {
         auto& board = (LichuangDevBoard&)Board::GetInstance();
         auto touchpad = board.GetTouchpad();
@@ -128,19 +172,31 @@ private:
 
     void InitializeFt6336TouchPad() {
         ESP_LOGI(TAG, "Init FT6336");
-        ft6336_ = new Ft6336(i2c_bus_, 0x38);       
+        ft6336_ = new Ft6336(i2c_bus_, 0x38);
         
-        // 创建定时器，10ms 间隔
-        esp_timer_create_args_t timer_args = {
-            .callback = touchpad_timer_callback,
-            .arg = NULL,
-            .dispatch_method = ESP_TIMER_TASK,
-            .name = "touchpad_timer",
-            .skip_unhandled_events = true,
-        };
+        // // 创建定时器，10ms 间隔
+        // esp_timer_create_args_t timer_args = {
+        //     // .callback = touchpad_timer_callback,
+        //     .arg = NULL,
+        //     .dispatch_method = ESP_TIMER_TASK,
+        //     .name = "touchpad_timer",
+        //     .skip_unhandled_events = true,
+        // };
         
-        ESP_ERROR_CHECK(esp_timer_create(&timer_args, &touchpad_timer_));
-        ESP_ERROR_CHECK(esp_timer_start_periodic(touchpad_timer_, 10 * 1000)); // 10ms = 10000us
+        // ESP_ERROR_CHECK(esp_timer_create(&timer_args, &touchpad_timer_));
+        // ESP_ERROR_CHECK(esp_timer_start_periodic(touchpad_timer_, 10 * 1000)); // 10ms = 10000us
+    }
+
+    // 【新增】在 LichuangDevBoard 类中添加注册LVGL触摸板的方法
+    // 在 LichuangDevBoard 类中添加注册LVGL触摸板的方法 (LVGL v9.2.2)
+    void RegisterLvglTouchpad() {
+        // 创建输入设备对象
+        lv_indev_t * indev = lv_indev_create();
+        // 设置输入设备类型为 POINTER（指针/触摸输入设备）
+        lv_indev_set_type(indev, LV_INDEV_TYPE_POINTER);
+        // 设置输入设备的读取回调函数
+        lv_indev_set_read_cb(indev, lv_touchpad_read);
+        ESP_LOGI(TAG, "CCJ LVGL触摸板注册完成");
     }
 
     void InitializeSpi() {
@@ -217,12 +273,12 @@ private:
 public:
     LichuangDevBoard() : boot_button_(BOOT_BUTTON_GPIO) {
         InitializeI2c();
-        InitializeFt6336TouchPad();
         InitializeSpi();
         InitializeSt7789Display();
+        InitializeFt6336TouchPad();
         InitializeButtons();
         InitializeIot();
-
+        RegisterLvglTouchpad();
     }
 
     virtual AudioCodec* GetAudioCodec() override {

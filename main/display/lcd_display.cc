@@ -187,7 +187,7 @@ void LcdDisplay::SetupUI() {
     
     /* Content */
     content_ = lv_obj_create(container_);
-    lv_obj_set_scrollbar_mode(content_, LV_SCROLLBAR_MODE_OFF);
+    lv_obj_set_scrollbar_mode(content_, LV_SCROLLBAR_MODE_AUTO);
     lv_obj_set_style_radius(content_, 0, 0);
     lv_obj_set_width(content_, LV_HOR_RES);
     lv_obj_set_flex_grow(content_, 1);
@@ -198,6 +198,7 @@ void LcdDisplay::SetupUI() {
     emotion_label_ = lv_label_create(content_);
     lv_obj_set_style_text_font(emotion_label_, &font_awesome_30_4, 0);
     lv_label_set_text(emotion_label_, FONT_AWESOME_AI_CHIP);
+    lv_obj_set_size(emotion_label_, LV_PCT(30), LV_SIZE_CONTENT);
 
     chat_message_label_ = lv_label_create(content_);
     lv_label_set_text(chat_message_label_, "");
