@@ -324,7 +324,7 @@ void Application::Start() {
             } else if (strcmp(state->valuestring, "sentence_start") == 0) {
                 auto text = cJSON_GetObjectItem(root, "text");
                 if (text != NULL) {
-                    ESP_LOGI(TAG, "<< %s", text->valuestring);
+                    // ESP_LOGI(TAG, "<< %s", text->valuestring);
                     Schedule([this, display, message = std::string(text->valuestring)]() {
                         display->SetChatMessage("assistant", message);
                     });
@@ -333,7 +333,7 @@ void Application::Start() {
         } else if (strcmp(type->valuestring, "stt") == 0) {
             auto text = cJSON_GetObjectItem(root, "text");
             if (text != NULL) {
-                ESP_LOGI(TAG, ">> %s", text->valuestring);
+                // ESP_LOGI(TAG, ">> %s", text->valuestring);
                 Schedule([this, display, message = std::string(text->valuestring)]() {
                     display->SetChatMessage("user", message);
                 });
@@ -406,16 +406,18 @@ void Application::Start() {
                 }
                 
                 std::vector<uint8_t> opus;
+                ESP_LOGI(TAG, "编码并发送唤醒音频数据: %zu", opus.size());
                 // Encode and send the wake word data to the server
                 while (wake_word_detect_.GetWakeWordOpus(opus)) {
+                    // ESP_LOGI(TAG, "发送唤醒词数据: %zu", opus.size());
                     protocol_->SendAudio(opus);
                 }
                 // Set the chat state to wake word detected
                 protocol_->SendWakeWordDetected(wake_word);
-                ESP_LOGI(TAG, "Wake word detected: %s", wake_word.c_str());
                 keep_listening_ = true;
                 SetDeviceState(kDeviceStateListening);
             } else if (device_state_ == kDeviceStateSpeaking) {
+                ESP_LOGI(TAG, "收到唤醒词检测到消息,语言被打断");
                 AbortSpeaking(kAbortReasonWakeWordDetected);
             }
 
@@ -572,9 +574,10 @@ void Application::InputAudio() {
 }
 
 void Application::AbortSpeaking(AbortReason reason) {
-    ESP_LOGI(TAG, "Abort speaking");
+    ESP_LOGI(TAG, "中止说话");
     aborted_ = true;
     protocol_->SendAbortSpeaking(reason);
+    ESP_LOGI(TAG, "中止说话完成");
 }
 
 void Application::SetDeviceState(DeviceState state) {
@@ -583,7 +586,7 @@ void Application::SetDeviceState(DeviceState state) {
     }
     
     device_state_ = state;
-    ESP_LOGI(TAG, "STATE: %s", STATE_STRINGS[device_state_]);
+    ESP_LOGI(TAG, "从状态: %s 变为状态: %s", STATE_STRINGS[device_state_], STATE_STRINGS[state]);
     // The state is changed, wait for all background tasks to finish
     background_task_->WaitForCompletion();
 
@@ -630,6 +633,7 @@ void Application::SetDeviceState(DeviceState state) {
             // Do nothing
             break;
     }
+    ESP_LOGI(TAG, "状态变化完成");
 }
 
 void Application::SetDecodeSampleRate(int sample_rate) {
@@ -649,10 +653,15 @@ void Application::SetDecodeSampleRate(int sample_rate) {
 }
 
 void Application::UpdateIotStates() {
+    ESP_LOGD(TAG, "检查IOC设备状态");
     auto& thing_manager = iot::ThingManager::GetInstance();
     auto states = thing_manager.GetStatesJson();
     if (states != last_iot_states_) {
         last_iot_states_ = states;
+        ESP_LOGD(TAG, "有变化，更新IOC设备状态");
         protocol_->SendIotStates(states);
+        ESP_LOGD(TAG, "更新IOC设备状态完成");
+    }else{
+        ESP_LOGD(TAG, "没有变化，不更新IOC设备状态");
     }
 }

@@ -7,6 +7,7 @@
 #include <ml307_mqtt.h>
 #include <ml307_udp.h>
 #include <cstring>
+#include <cJSON.h>
 #include <arpa/inet.h>
 
 #define TAG "MQTT"
@@ -54,6 +55,8 @@ bool MqttProtocol::StartMqttClient() {
     });
 
     mqtt_->OnMessage([this](const std::string& topic, const std::string& payload) {
+
+        ESP_LOGI(TAG, "收到消息，标题： %s，内容：%s", topic.c_str(), payload.c_str());
         cJSON* root = cJSON_Parse(payload.c_str());
         if (root == nullptr) {
             ESP_LOGE(TAG, "Failed to parse json message %s", payload.c_str());
@@ -95,6 +98,7 @@ bool MqttProtocol::StartMqttClient() {
 }
 
 void MqttProtocol::SendText(const std::string& text) {
+    ESP_LOGI(TAG, "发送消息: %s", text.c_str());
     if (publish_topic_.empty()) {
         return;
     }
@@ -102,6 +106,7 @@ void MqttProtocol::SendText(const std::string& text) {
 }
 
 void MqttProtocol::SendAudio(const std::vector<uint8_t>& data) {
+    ESP_LOGI(TAG, "UDP发送音频数据: %zu", data.size());
     std::lock_guard<std::mutex> lock(channel_mutex_);
     if (udp_ == nullptr) {
         return;
@@ -126,6 +131,7 @@ void MqttProtocol::SendAudio(const std::vector<uint8_t>& data) {
 }
 
 void MqttProtocol::CloseAudioChannel() {
+    ESP_LOGI(TAG, "关闭音频通道");
     {
         std::lock_guard<std::mutex> lock(channel_mutex_);
         if (udp_ != nullptr) {
@@ -138,6 +144,7 @@ void MqttProtocol::CloseAudioChannel() {
     message += "\"session_id\":\"" + session_id_ + "\",";
     message += "\"type\":\"goodbye\"";
     message += "}";
+    // ESP_LOGI(TAG, "发送 goodbye 消息关闭音频通道");
     SendText(message);
 
     if (on_audio_channel_closed_ != nullptr) {
@@ -146,9 +153,11 @@ void MqttProtocol::CloseAudioChannel() {
 }
 
 bool MqttProtocol::OpenAudioChannel() {
+    ESP_LOGI(TAG, "打开音频通道");
     if (mqtt_ == nullptr || !mqtt_->IsConnected()) {
         ESP_LOGI(TAG, "MQTT is not connected, try to connect now");
         if (!StartMqttClient()) {
+
             return false;
         }
     }
@@ -156,6 +165,7 @@ bool MqttProtocol::OpenAudioChannel() {
     session_id_ = "";
 
     // 发送 hello 消息申请 UDP 通道
+    ESP_LOGI(TAG, "发送 hello 消息申请udp通道");
     std::string message = "{";
     message += "\"type\":\"hello\",";
     message += "\"version\": 3,";
@@ -181,6 +191,7 @@ bool MqttProtocol::OpenAudioChannel() {
     }
     udp_ = Board::GetInstance().CreateUdp();
     udp_->OnMessage([this](const std::string& data) {
+        ESP_LOGI("UDP", "收到音频数据: %zu", data.size());
         if (data.size() < sizeof(aes_nonce_)) {
             ESP_LOGE(TAG, "Invalid audio packet size: %zu", data.size());
             return;
@@ -228,6 +239,7 @@ void MqttProtocol::ParseServerHello(const cJSON* root) {
     auto transport = cJSON_GetObjectItem(root, "transport");
     if (transport == nullptr || strcmp(transport->valuestring, "udp") != 0) {
         ESP_LOGE(TAG, "Unsupported transport: %s", transport->valuestring);
+
         return;
     }
 
