@@ -153,7 +153,6 @@ private:
         // 检测触摸开始
         if (touch_point.num > 0 && !was_touched) {
             was_touched = true;
-            board.GetDisplay()->TurnOn();
             touch_start_time = esp_timer_get_time() / 1000; // 转换为毫秒
         } 
 
@@ -164,7 +163,14 @@ private:
             // 只有短触才触发
             if (touch_duration < TOUCH_THRESHOLD_MS) {
                 auto& app = Application::GetInstance();
-                app.ToggleChatState();
+                //-----这里屏幕灭就点亮屏幕进入聊天状态，屏幕亮则切换暂停
+                auto display = Board::GetInstance().GetDisplay();
+                auto lcd_display = static_cast<LcdDisplay*>(display);
+                if (lcd_display && lcd_display->IsOn()) {
+                    app.TogglePause();
+                } else {
+                    app.StartListening(kListeningModeAutoStop);
+                }
             }
         }
     }

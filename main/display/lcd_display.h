@@ -53,6 +53,7 @@ public:
     void SetChatMessage(const std::string &role, const std::string &content) override;
     void SetEmotion(const std::string &emotion) override;
     void SetIcon(const char* icon) override;
+    bool IsOn() const { return is_on_; }
 };
 
 #endif // LCD_DISPLAY_H

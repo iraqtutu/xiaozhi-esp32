@@ -36,6 +36,7 @@ static const char* const STATE_STRINGS[] = {
     "speaking",
     "upgrading",
     "fatal_error",
+    "paused",
     "invalid_state"
 };
 
@@ -156,7 +157,7 @@ void Application::ToggleChatState() {
             return;
         }
 
-        if (device_state_ == kDeviceStateIdle) {
+        if (device_state_ == kDeviceStateIdle || device_state_ == kDeviceStatePaused) {
             SetDeviceState(kDeviceStateConnecting);
             if (!protocol_->OpenAudioChannel()) {
                 Alert("Error", "Failed to open audio channel");
@@ -175,15 +176,15 @@ void Application::ToggleChatState() {
     });
 }
 
-void Application::StartListening() {
-    Schedule([this]() {
+void Application::StartListening(ListeningMode mode) {
+    Schedule([this,mode]() {
         if (!protocol_) {
             ESP_LOGE(TAG, "Protocol not initialized");
             return;
         }
         
         keep_listening_ = false;
-        if (device_state_ == kDeviceStateIdle) {
+        if (device_state_ == kDeviceStateIdle || device_state_ == kDeviceStatePaused) {
             if (!protocol_->IsAudioChannelOpened()) {
                 SetDeviceState(kDeviceStateConnecting);
                 if (!protocol_->OpenAudioChannel()) {
@@ -192,11 +193,11 @@ void Application::StartListening() {
                     return;
                 }
             }
-            protocol_->SendStartListening(kListeningModeManualStop);
+            protocol_->SendStartListening(mode);
             SetDeviceState(kDeviceStateListening);
         } else if (device_state_ == kDeviceStateSpeaking) {
             AbortSpeaking(kAbortReasonNone);
-            protocol_->SendStartListening(kListeningModeManualStop);
+            protocol_->SendStartListening(mode);
             // FIXME: Wait for the speaker to empty the buffer
             vTaskDelay(pdMS_TO_TICKS(120));
             SetDeviceState(kDeviceStateListening);
@@ -394,7 +395,7 @@ void Application::Start() {
 
     wake_word_detect_.OnWakeWordDetected([this](const std::string& wake_word) {
         Schedule([this, &wake_word]() {
-            if (device_state_ == kDeviceStateIdle) {
+            if (device_state_ == kDeviceStateIdle || device_state_ == kDeviceStatePaused) {
                 SetDeviceState(kDeviceStateConnecting);
                 wake_word_detect_.EncodeWakeWordData();
 
@@ -581,12 +582,12 @@ void Application::AbortSpeaking(AbortReason reason) {
 }
 
 void Application::SetDeviceState(DeviceState state) {
+    ESP_LOGI(TAG, "从状态: %s 变为状态: %s", STATE_STRINGS[device_state_], STATE_STRINGS[state]);
     if (device_state_ == state) {
         return;
     }
     
     device_state_ = state;
-    ESP_LOGI(TAG, "从状态: %s 变为状态: %s", STATE_STRINGS[device_state_], STATE_STRINGS[state]);
     // The state is changed, wait for all background tasks to finish
     background_task_->WaitForCompletion();
 
@@ -629,6 +630,9 @@ void Application::SetDeviceState(DeviceState state) {
             audio_processor_.Stop();
 #endif
             break;
+        case kDeviceStatePaused:
+            display->SetStatus("暂停中...");
+            break;
         default:
             // Do nothing
             break;
@@ -664,4 +668,48 @@ void Application::UpdateIotStates() {
     }else{
         ESP_LOGD(TAG, "没有变化，不更新IOC设备状态");
     }
+}
+
+void Application::TogglePause() {
+    Schedule([this]() {
+        if (!is_paused_) {
+            // 如果当前不是暂停状态，进入暂停
+            if (device_state_ == kDeviceStateSpeaking || 
+                device_state_ == kDeviceStateListening) {
+                state_before_pause_ = device_state_;
+                
+                // 如果正在说话，中止说话
+                if (device_state_ == kDeviceStateSpeaking) {
+                    AbortSpeaking(kAbortReasonNone);
+                }
+                
+                // 停止音频处理
+                auto codec = Board::GetInstance().GetAudioCodec();
+                codec->EnableOutput(false);
+                
+#if CONFIG_IDF_TARGET_ESP32S3
+                audio_processor_.Stop();
+                wake_word_detect_.StopDetection();
+#endif
+                
+                is_paused_ = true;
+                SetDeviceState(kDeviceStatePaused);
+            }
+        } else {
+            // 如果当前是暂停状态，恢复
+            is_paused_ = false;
+            
+#if CONFIG_IDF_TARGET_ESP32S3
+            wake_word_detect_.StartDetection();
+            audio_processor_.Start();
+#endif
+            // 恢复到监听状态
+            if (!protocol_->IsAudioChannelOpened()) {
+                SetDeviceState(kDeviceStateConnecting);
+                protocol_->OpenAudioChannel();
+            }
+            protocol_->SendStartListening(kListeningModeAutoStop);
+            SetDeviceState(kDeviceStateListening);
+        }
+    });
 }

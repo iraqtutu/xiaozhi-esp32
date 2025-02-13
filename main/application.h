@@ -35,7 +35,8 @@ enum DeviceState {
     kDeviceStateListening,
     kDeviceStateSpeaking,
     kDeviceStateUpgrading,
-    kDeviceStateFatalError
+    kDeviceStateFatalError,
+    kDeviceStatePaused,    // ccj新增暂停状态
 };
 
 #define OPUS_FRAME_DURATION_MS 60
@@ -58,10 +59,13 @@ public:
     void Alert(const std::string& title, const std::string& message);
     void AbortSpeaking(AbortReason reason);
     void ToggleChatState();
-    void StartListening();
+    void StartListening(ListeningMode mode = kListeningModeManualStop);
     void StopListening();
     void UpdateIotStates();
-
+    // ccj增加
+    void TogglePause();  // 新增切换暂停状态的方法
+    bool IsPaused() const { return is_paused_; }
+    
 private:
     Application();
     ~Application();
@@ -80,6 +84,10 @@ private:
     bool aborted_ = false;
     bool voice_detected_ = false;
     std::string last_iot_states_;
+
+    // ccj增加
+    bool is_paused_ = false;  // 新增暂停标志
+    DeviceState state_before_pause_ = kDeviceStateIdle;  // 记录暂停前的状态
 
     // Audio encode / decode
     BackgroundTask* background_task_ = nullptr;
