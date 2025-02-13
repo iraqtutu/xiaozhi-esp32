@@ -293,12 +293,18 @@ void Application::Start() {
     protocol_->OnAudioChannelClosed([this, &board]() {
         board.SetPowerSaveMode(true);
         Schedule([this]() {
+            if(device_state_==kDeviceStatePaused){
+                return;
+            }
             auto display = Board::GetInstance().GetDisplay();
             display->SetChatMessage("", "");
             SetDeviceState(kDeviceStateIdle);
         });
     });
     protocol_->OnIncomingJson([this, display](const cJSON* root) {
+        if(device_state_==kDeviceStatePaused){
+            return;
+        }
         // Parse JSON data
         auto type = cJSON_GetObjectItem(root, "type");
         if (strcmp(type->valuestring, "tts") == 0) {
