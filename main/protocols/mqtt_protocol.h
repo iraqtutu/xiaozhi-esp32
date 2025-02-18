@@ -32,7 +32,7 @@ public:
 
 private:
     EventGroupHandle_t event_group_handle_;
-
+    int message_counter_ = 0;
     std::string endpoint_;
     std::string client_id_;
     std::string username_;

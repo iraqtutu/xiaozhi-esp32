@@ -55,8 +55,8 @@ bool MqttProtocol::StartMqttClient() {
     });
 
     mqtt_->OnMessage([this](const std::string& topic, const std::string& payload) {
-
-        ESP_LOGI(TAG, "收到消息，标题： %s，内容：%s", topic.c_str(), payload.c_str());
+        message_counter_++;
+        ESP_LOGI(TAG, "--%d--收到消息，标题： %s，内容：%s", message_counter_, topic.c_str(), payload.c_str());
         cJSON* root = cJSON_Parse(payload.c_str());
         if (root == nullptr) {
             ESP_LOGE(TAG, "Failed to parse json message %s", payload.c_str());
@@ -98,7 +98,8 @@ bool MqttProtocol::StartMqttClient() {
 }
 
 void MqttProtocol::SendText(const std::string& text) {
-    ESP_LOGI(TAG, "发送消息: %s", text.c_str());
+    message_counter_++;
+    ESP_LOGI(TAG, "--%d--发送消息: %s", message_counter_, text.c_str());
     if (publish_topic_.empty()) {
         return;
     }
@@ -106,12 +107,11 @@ void MqttProtocol::SendText(const std::string& text) {
 }
 
 void MqttProtocol::SendAudio(const std::vector<uint8_t>& data) {
-    ESP_LOGI(TAG, "UDP发送音频数据: %zu", data.size());
     std::lock_guard<std::mutex> lock(channel_mutex_);
     if (udp_ == nullptr) {
         return;
     }
-
+    ESP_LOGI(TAG, "UDP发送音频数据: %zu", data.size());
     std::string nonce(aes_nonce_);
     *(uint16_t*)&nonce[2] = htons(data.size());
     *(uint32_t*)&nonce[12] = htonl(++local_sequence_);
@@ -163,7 +163,7 @@ bool MqttProtocol::OpenAudioChannel() {
     }
 
     session_id_ = "";
-
+    xEventGroupClearBits(event_group_handle_, MQTT_PROTOCOL_SERVER_HELLO_EVENT);
     // 发送 hello 消息申请 UDP 通道
     ESP_LOGI(TAG, "发送 hello 消息申请udp通道");
     std::string message = "{";
@@ -246,6 +246,7 @@ void MqttProtocol::ParseServerHello(const cJSON* root) {
     auto session_id = cJSON_GetObjectItem(root, "session_id");
     if (session_id != nullptr) {
         session_id_ = session_id->valuestring;
+        ESP_LOGI(TAG, "Session ID: %s", session_id_.c_str());
     }
 
     // Get sample rate from hello message

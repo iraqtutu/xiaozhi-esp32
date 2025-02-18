@@ -31,6 +31,10 @@ public:
         return server_sample_rate_;
     }
 
+    inline const std::string& session_id() const {
+        return session_id_;
+    }
+
     void OnIncomingAudio(std::function<void(std::vector<uint8_t>&& data)> callback);
     void OnIncomingJson(std::function<void(const cJSON* root)> callback);
     void OnAudioChannelOpened(std::function<void()> callback);
