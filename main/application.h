@@ -17,7 +17,7 @@
 #include "ota.h"
 #include "background_task.h"
 
-#if CONFIG_IDF_TARGET_ESP32S3
+#if CONFIG_USE_AUDIO_PROCESSING
 #include "wake_word_detect.h"
 #include "audio_processor.h"
 #endif
@@ -35,8 +35,9 @@ enum DeviceState {
     kDeviceStateListening,
     kDeviceStateSpeaking,
     kDeviceStateUpgrading,
-    kDeviceStateFatalError,
     kDeviceStatePaused,    // ccj新增暂停状态
+    kDeviceStateActivating,
+    kDeviceStateFatalError
 };
 
 #define OPUS_FRAME_DURATION_MS 60
@@ -56,21 +57,23 @@ public:
     bool IsVoiceDetected() const { return voice_detected_; }
     void Schedule(std::function<void()> callback);
     void SetDeviceState(DeviceState state);
-    void Alert(const std::string& title, const std::string& message);
+    void Alert(const std::string& status, const std::string& message, const std::string& emotion = "", const std::string_view& sound = "");
     void AbortSpeaking(AbortReason reason);
     void ToggleChatState();
     void StartListening(ListeningMode mode = kListeningModeManualStop);
     void StopListening();
     void UpdateIotStates();
+    void Reboot();
+    void WakeWordInvoke(const std::string& wake_word);
     // ccj增加
     void TogglePause();  // 新增切换暂停状态的方法
     bool IsPaused() const { return is_paused_; }
-    
+
 private:
     Application();
     ~Application();
 
-#if CONFIG_IDF_TARGET_ESP32S3
+#if CONFIG_USE_AUDIO_PROCESSING
     WakeWordDetect wake_word_detect_;
     AudioProcessor audio_processor_;
 #endif
@@ -108,6 +111,7 @@ private:
     void ResetDecoder();
     void SetDecodeSampleRate(int sample_rate);
     void CheckNewVersion();
+    void ShowActivationCode();
 
     void PlayLocalFile(const char* data, size_t size);
 };

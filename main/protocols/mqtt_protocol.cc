@@ -7,15 +7,12 @@
 #include <ml307_mqtt.h>
 #include <ml307_udp.h>
 #include <cstring>
-#include <cJSON.h>
 #include <arpa/inet.h>
 
 #define TAG "MQTT"
 
 MqttProtocol::MqttProtocol() {
     event_group_handle_ = xEventGroupCreate();
-
-    StartMqttClient();
 }
 
 MqttProtocol::~MqttProtocol() {
@@ -27,6 +24,10 @@ MqttProtocol::~MqttProtocol() {
         delete mqtt_;
     }
     vEventGroupDelete(event_group_handle_);
+}
+
+void MqttProtocol::Start() {
+    StartMqttClient();
 }
 
 bool MqttProtocol::StartMqttClient() {
@@ -103,7 +104,12 @@ void MqttProtocol::SendText(const std::string& text) {
     if (publish_topic_.empty()) {
         return;
     }
-    mqtt_->Publish(publish_topic_, text);
+    if (!mqtt_->Publish(publish_topic_, text)) {
+        ESP_LOGE(TAG, "Failed to publish message");
+        if (on_network_error_ != nullptr) {
+            on_network_error_("发送失败，请检查网络");
+        }
+    }
 }
 
 void MqttProtocol::SendAudio(const std::vector<uint8_t>& data) {
@@ -144,7 +150,6 @@ void MqttProtocol::CloseAudioChannel() {
     message += "\"session_id\":\"" + session_id_ + "\",";
     message += "\"type\":\"goodbye\"";
     message += "}";
-    // ESP_LOGI(TAG, "发送 goodbye 消息关闭音频通道");
     SendText(message);
 
     if (on_audio_channel_closed_ != nullptr) {
@@ -157,13 +162,13 @@ bool MqttProtocol::OpenAudioChannel() {
     if (mqtt_ == nullptr || !mqtt_->IsConnected()) {
         ESP_LOGI(TAG, "MQTT is not connected, try to connect now");
         if (!StartMqttClient()) {
-
             return false;
         }
     }
 
     session_id_ = "";
     xEventGroupClearBits(event_group_handle_, MQTT_PROTOCOL_SERVER_HELLO_EVENT);
+
     // 发送 hello 消息申请 UDP 通道
     ESP_LOGI(TAG, "发送 hello 消息申请udp通道");
     std::string message = "{";
@@ -239,7 +244,6 @@ void MqttProtocol::ParseServerHello(const cJSON* root) {
     auto transport = cJSON_GetObjectItem(root, "transport");
     if (transport == nullptr || strcmp(transport->valuestring, "udp") != 0) {
         ESP_LOGE(TAG, "Unsupported transport: %s", transport->valuestring);
-
         return;
     }
 

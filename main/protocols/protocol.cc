@@ -31,7 +31,6 @@ void Protocol::SendAbortSpeaking(AbortReason reason) {
         message += ",\"reason\":\"wake_word_detected\"";
     }
     message += "}";
-    // ESP_LOGI(TAG, "SendAbortSpeaking: %s", message.c_str());
     SendText(message);
 }
 
@@ -39,7 +38,6 @@ void Protocol::SendWakeWordDetected(const std::string& wake_word) {
     ESP_LOGI(TAG, "发送检测到唤醒词消息给服务器");
     std::string json = "{\"session_id\":\"" + session_id_ + 
                       "\",\"type\":\"listen\",\"state\":\"detect\",\"text\":\"" + wake_word + "\"}";
-    // ESP_LOGI(TAG, "SendWakeWordDetected: %s", json.c_str());
     SendText(json);
 }
 
@@ -55,28 +53,24 @@ void Protocol::SendStartListening(ListeningMode mode) {
         message += ",\"mode\":\"manual\"";
     }
     message += "}";
-    // ESP_LOGI(TAG, "SendStartListening: %s", message.c_str());
     SendText(message);
 }
 
 void Protocol::SendStopListening() {
     ESP_LOGI(TAG, "发送停止监听消息给服务器");
     std::string message = "{\"session_id\":\"" + session_id_ + "\",\"type\":\"listen\",\"state\":\"stop\"}";
-    // ESP_LOGI(TAG, "SendStopListening: %s", message.c_str());
     SendText(message);
 }
 
 void Protocol::SendIotDescriptors(const std::string& descriptors) {
     ESP_LOGI(TAG, "发送Iot描述消息给服务器");
     std::string message = "{\"session_id\":\"" + session_id_ + "\",\"type\":\"iot\",\"descriptors\":" + descriptors + "}";
-    // ESP_LOGI(TAG, "SendIotDescriptors: %s", message.c_str());
     SendText(message);
 }
 
 void Protocol::SendIotStates(const std::string& states) {
     ESP_LOGI(TAG, "发送Iot状态消息给服务器");
     std::string message = "{\"session_id\":\"" + session_id_ + "\",\"type\":\"iot\",\"states\":" + states + "}";
-    // ESP_LOGI(TAG, "SendIotStates: %s", message.c_str());
     SendText(message);
 }
 

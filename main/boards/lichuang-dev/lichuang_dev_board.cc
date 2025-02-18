@@ -1,6 +1,3 @@
-// 添加LVGL头文件（如果尚未包含）
-#define LV_USE_INDEV 1
-#include <lvgl.h>
 #include "wifi_board.h"
 #include "audio_codecs/box_audio_codec.h"
 #include "display/lcd_display.h"
@@ -17,7 +14,6 @@
 #include <wifi_station.h>
 
 #define TAG "LichuangDevBoard"
-
 
 LV_FONT_DECLARE(font_puhui_20_4);
 LV_FONT_DECLARE(font_awesome_20_4);
@@ -273,6 +269,7 @@ private:
     void InitializeIot() {
         auto& thing_manager = iot::ThingManager::GetInstance();
         thing_manager.AddThing(iot::CreateThing("Speaker"));
+        thing_manager.AddThing(iot::CreateThing("Backlight"));
     }
 
 public:
@@ -287,13 +284,20 @@ public:
     }
 
     virtual AudioCodec* GetAudioCodec() override {
-        static BoxAudioCodec* audio_codec = nullptr;
-        if (audio_codec == nullptr) {
-            audio_codec = new BoxAudioCodec(i2c_bus_, AUDIO_INPUT_SAMPLE_RATE, AUDIO_OUTPUT_SAMPLE_RATE,
-                AUDIO_I2S_GPIO_MCLK, AUDIO_I2S_GPIO_BCLK, AUDIO_I2S_GPIO_WS, AUDIO_I2S_GPIO_DOUT, AUDIO_I2S_GPIO_DIN,
-                GPIO_NUM_NC, AUDIO_CODEC_ES8311_ADDR, AUDIO_CODEC_ES7210_ADDR, AUDIO_INPUT_REFERENCE);
-        }
-        return audio_codec;
+        static BoxAudioCodec audio_codec(
+            i2c_bus_, 
+            AUDIO_INPUT_SAMPLE_RATE, 
+            AUDIO_OUTPUT_SAMPLE_RATE,
+            AUDIO_I2S_GPIO_MCLK, 
+            AUDIO_I2S_GPIO_BCLK, 
+            AUDIO_I2S_GPIO_WS, 
+            AUDIO_I2S_GPIO_DOUT, 
+            AUDIO_I2S_GPIO_DIN,
+            GPIO_NUM_NC, 
+            AUDIO_CODEC_ES8311_ADDR, 
+            AUDIO_CODEC_ES7210_ADDR, 
+            AUDIO_INPUT_REFERENCE);
+        return &audio_codec;
     }
 
     virtual Display* GetDisplay() override {
