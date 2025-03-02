@@ -1,0 +1,248 @@
+I (675) gpio: GPIO[39]| InputEn: 0| OutputEn: 1| OpenDrain: 0| Pullup: 0| Pulldown: 0| Intr:0
+I (845) LcdDisplay: Turning display on
+I (845) LcdDisplay: Initialize LVGL library
+I (845) LcdDisplay: Initialize LVGL port
+I (845) LVGL: Starting LVGL task
+I (845) LcdDisplay: Adding LCD screen
+I (855) LcdDisplay: Setting LCD backlight: 0%
+I (855) LichuangDevBoard: Init FT6336
+I (855) LichuangDevBoard: Get chip ID: 0x64
+I (895) LichuangDevBoard: CCJ LVGL触摸板注册完成
+I (895) Application: STATE: starting
+I (895) BoxAudioCodec: Duplex channels created
+I (905) ES8311: Work in Slave mode
+I (905) ES7210: Work in Slave mode
+I (915) ES7210: Enable ES7210_INPUT_MIC1
+I (915) ES7210: Enable ES7210_INPUT_MIC2
+I (925) ES7210: Enable ES7210_INPUT_MIC3
+I (925) ES7210: Enable ES7210_INPUT_MIC4
+I (925) ES7210: Enable TDM mode
+I (935) BoxAudioCodec: BoxAudioDevice initialized
+I (935) Application: WiFi board detected, setting opus encoder complexity to 3
+I (935) OpusResampler: Resampler configured with input sample rate 24000 and output sample rate 16000
+I (945) OpusResampler: Resampler configured with input sample rate 24000 and output sample rate 16000
+I (955) I2S_IF: channel mode 2 bits:16/16 channel:4 mask:3
+I (955) I2S_IF: TDM Mode 0 bits:16/16 channel:4 sample_rate:24000 mask:3
+I (965) I2S_IF: channel mode 0 bits:16/16 channel:4 mask:3
+I (965) I2S_IF: STD Mode 1 bits:32/32 channel:4 sample_rate:24000 mask:0
+I (975) ES7210: Bits 16
+I (985) ES7210: Enable ES7210_INPUT_MIC1
+I (985) ES7210: Enable ES7210_INPUT_MIC2
+I (995) ES7210: Enable ES7210_INPUT_MIC3
+I (995) ES7210: Enable ES7210_INPUT_MIC4
+I (995) ES7210: Enable TDM mode
+I (1005) ES7210: Unmuted
+I (1005) Adev_Codec: Open codec device OK
+I (1005) AudioCodec: Set input enable to true
+I (1005) I2S_IF: Mode 0 need extend bits 64 to 32
+I (1005) I2S_IF: channel mode 0 bits:16/32 channel:2 mask:1
+I (1015) I2S_IF: STD Mode 1 bits:16/32 channel:2 sample_rate:24000 mask:1
+I (1035) Adev_Codec: Open codec device OK
+I (1035) AudioCodec: Set output enable to true
+I (1045) pp: pp rom version: e7ae62f
+I (1045) net80211: net80211 rom version: e7ae62f
+I (1055) wifi:wifi driver task: 3fcd1790, prio:23, stack:6656, core=0
+I (1055) wifi:wifi firmware version: 48ea317a7
+I (1055) wifi:wifi certification version: v7.0
+I (1055) wifi:config NVS flash: disabled
+I (1065) wifi:config nano formatting: disabled
+I (1065) wifi:Init data frame dynamic rx buffer num: 32
+I (1075) wifi:Init static rx mgmt buffer num: 5
+I (1075) wifi:Init management short buffer num: 32
+I (1075) wifi:Init static tx buffer num: 16
+I (1085) wifi:Init tx cache buffer num: 32
+I (1085) wifi:Init static tx FG buffer num: 2
+I (1095) wifi:Init static rx buffer size: 1600
+I (1095) wifi:Init static rx buffer num: 16
+I (1095) wifi:Init dynamic rx buffer num: 32
+I (1105) wifi_init: rx ba win: 16
+I (1105) wifi_init: accept mbox: 6
+I (1105) wifi_init: tcpip mbox: 32
+I (1115) wifi_init: udp mbox: 6
+I (1115) wifi_init: tcp mbox: 6
+I (1115) wifi_init: tcp tx win: 5760
+I (1125) wifi_init: tcp rx win: 5760
+I (1125) wifi_init: tcp mss: 1440
+I (1125) wifi_init: WiFi/LWIP prefer SPIRAM
+I (1135) phy_init: phy_version 680,a6008b2,Jun  4 2024,16:41:10
+I (1165) wifi:mode : sta (d8:3b:da:4e:00:9c)
+I (1165) wifi:enable tsf
+I (3575) wifi: Found AP: chenyuyang, BSSID: a4:39:b3:09:ef:a8, RSSI: -71, Channel: 2, Authmode: 3
+W (3585) wifi:Password length matches WPA2 standards, authmode threshold changes from OPEN to WPA2
+I (3925) wifi:new:<2,0>, old:<1,0>, ap:<255,255>, sta:<2,0>, prof:1, snd_ch_cfg:0x0
+I (3925) wifi:state: init -> auth (0xb0)
+I (3955) wifi:state: auth -> assoc (0x0)
+I (3965) wifi:state: assoc -> run (0x10)
+I (3985) wifi:connected with chenyuyang, aid = 5, channel 2, BW20, bssid = a4:39:b3:09:ef:a8
+I (3985) wifi:security: WPA2-PSK, phy: bgn, rssi: -70
+I (3985) wifi:pm start, type: 1
+
+I (3985) wifi:dp: 1, bi: 102400, li: 3, scale listen interval from 307200 us to 307200 us
+I (3995) wifi:set rx beacon pti, rx_bcn_pti: 0, bcn_timeout: 25000, mt_pti: 0, mt_time: 10000
+I (4015) wifi:<ba-add>idx:0 (ifx:0, a4:39:b3:09:ef:a8), tid:6, ssn:2, winSize:64
+I (4055) wifi:AP's beacon interval = 102400 us, DTIM period = 1
+I (5595) wifi: Got IP: 192.168.31.226
+I (5595) esp_netif_handlers: sta ip: 192.168.31.226, mask: 255.255.255.0, gw: 192.168.31.1  
+I (5595) MQTT: Connecting to endpoint post-cn-apg3xckag01.mqtt.aliyuncs.com
+I (5605) wifi:<ba-add>idx:1 (ifx:0, a4:39:b3:09:ef:a8), tid:0, ssn:0, winSize:64
+I (5755) esp-x509-crt-bundle: Certificate validated
+I (6465) MQTT: Connected to endpoint
+I (6465) AFE_VC: afe interface for voice communication
+
+I (6465) AFE_VC: AFE version: VC_V220727
+
+I (6465) AFE_VC: Initial auido front-end, total channel: 2, mic num: 1, ref num: 1
+
+I (6475) Ota: Current version: 1.2.1
+I (6475) AFE_VC: aec_init: 0, se_init: 1, vad_init: 0
+
+I (6475) Ota: Check version URL: https://api.tenclass.net/xiaozhi/ota/
+I (6485) AFE_VC: wakenet_init: 0, voice_communication_agc_init: 1
+
+I (6495) Ota: Post data: {"version":2,"flash_size":16777216,"minimum_free_heap_size":8272440,"mac_address":"d8:3b:da:4e:00:9c","uuid":"c51e0af4-9727-46aa-9645-8f03695c2571","chip_model_name":"esp32s3","chip_info":{"model":9,"cores":2,"revision":2,"features":18},"application":{"name":"xiaozhi","version":"1.2.1","compile_time":"Feb 19 2025T16:31:32Z","idf_version":"v5.4","elf_sha256":"2e9601938431013134ad3c312733df8f05e8afe0089a7d96fcd99a8568fdd870"},"partition_table": [{"label":"nvs","type":1,"subtype":2,"address":36864,"size":16384},{"label":"otadata","type":1,"subtype":0,"address":53248,"size":8192},{"label":"phy_init","type":1,"subtype":1,"address":61440,"size":4096},{"label":"model","type":1,"subtype":130,"address":65536,"size":983040},{"label":"ota_0","type":0,"subtype":16,"address":1048576,"size":6291456},{"label":"ota_1","type":0,"subtype":17,"address":7340032,"size":6291456}],"ota":{"label":"ota_0"},"board":{"type":"lichuang-dev","ssid":"chenyuyang","rssi":-71,"channel":2,"ip":"192.168.31.226","mac":"d8:3b:da:4e:00:9c"}}
+I (6495) AFE_VC: ns_mode: 0
+
+I (6585) EspHttp: Opening HTTP connection to https://api.tenclass.net/xiaozhi/ota/
+I (6695) AFE_VC: mode: 1, (Nov  5 2024 16:02:49)
+
+I (6695) MODEL_LOADER: The storage free size is 20608 KB
+I (6695) MODEL_LOADER: The partition size is 960 KB
+I (6695) AudioProcessor: Audio communication task started, feed size: 160 fetch size: 512   
+I (6695) MODEL_LOADER: Successfully load srmodels
+I (6705) WakeWordDetect: Model 0: wn9_nihaoxiaozhi_tts
+I (6715) AFE_SR: afe interface for speech recognition
+I (6715) AFE_SR: AFE version: SR_V220727
+I (6725) AFE_SR: Initial auido front-end, total channel: 2, mic num: 1, ref num: 1
+I (6735) AFE_SR: aec_init: 1, se_init: 1, vad_init: 1
+
+I (6735) AFE_SR: wakenet_init: 1
+
+I (6785) esp-x509-crt-bundle: Certificate validated
+MC Quantized wakenet9: wakenet9l_tts1h8_你好小智_3_0.631_0.635, tigger:v3, mode:0, p:0, (Nov  5 2024 16:02:49)
+I (6935) AFE_SR: wake num: 1, mode: 1, (Nov  5 2024 16:02:49)
+
+I (6935) Application: STATE: idle
+I (6935) WakeWordDetect: Audio detection task started, feed size: 512 fetch size: 512       
+I (6945) LcdDisplay: Setting LCD backlight: 0%
+I (7405) Ota: Response: {"mqtt":{"endpoint":"post-cn-apg3xckag01.mqtt.aliyuncs.com","client_id":"GID_test@@@d8_3b_da_4e_00_9c","username":"Signature|LTAI5tF8J3CrdWmRiuTjxHbF|post-cn-apg3xckag01","password":"BSRV6VwHfYNkxAAEmhXLbf7pHZ4=","publish_topic":"device-server","subscribe_topic":"devices/d8_3b_da_4e_00_9c"},"server_time":{"timestamp":1739955355585,"timezone":"Asia/Shanghai","timezone_offset":-480},"firmware":{"version":"1.2.1","url":""}}
+I (7435) Ota: Current is the latest version
+I (7435) Ota: Running partition: ota_0
+I (11565) I2S_IF: Pending out channel for in channel running
+I (11565) AudioCodec: Set output enable to false
+I (16945) main: Free internal: 25307 minimal internal: 21139
+I (18995) Application: STATE: connecting
+I (18995) LcdDisplay: Setting LCD backlight: 100%
+I (19005) MQTT: 打开音频通道
+I (19005) MQTT: 发送 hello 消息申请udp通道
+I (19005) MQTT: --1--发送消息: {"type":"hello","version": 3,"transport":"udp","audio_params":{"format":"opus", "sample_rate":16000, "channels":1, "frame_duration":60}}
+I (19265) MQTT: --2--收到消息，标题： devices/p2p/GID_test@@@d8_3b_da_4e_00_9c，内容：{"type":"hello","version":3,"transport":"udp","udp":{"server":"120.24.160.13","port":8884,"encryption":"aes-128-ctr","key":"148ac081412cece702d7520fe079ac17","nonce":"01000000d83bda4e009ca5b500000000"},"audio_params":{"format":"opus","sample_rate":24000,"channels":1,"frame_duration":60},"session_id":"5874024e"}
+I (19295) MQTT: Session ID: 5874024e
+I (19295) wifi:Set ps type: 0, coexist: 0
+
+I (19305) Protocol: 发送Iot描述消息给服务器
+I (19305) MQTT: --3--发送消息: {"session_id":"5874024e","type":"iot","descriptors":[{"name":"Speaker","description":"当前 AI 机器人的扬声器","properties":{"volume":{"description":"当前音量值","type":"number"}},"methods":{"SetVolume":{"description":"设置音量","parameters":{"volume":{"description":"0到100之间的整数","type":"number"}}}}},{"name":"Backlight","description":"当前 AI 机器人屏幕的亮度","properties":{"brightness":{"description":"当前亮度值","type":"number"}},"methods":{"SetBrightness":{"description":"设置亮度","parameters":{"brightness":{"description":"0到100之间的整数","type":"number"}}}}}]}
+I (19365) MQTT: UDP发送音频数据: 82
+I (19365) MQTT: UDP发送音频数据: 80
+I (19375) MQTT: UDP发送音频数据: 78
+I (19375) MQTT: UDP发送音频数据: 71
+I (19375) MQTT: UDP发送音频数据: 1
+I (19385) MQTT: UDP发送音频数据: 1
+I (19385) WakeWordDetect: Encode wake word opus 27 packets in 377 ms
+I (19385) MQTT: UDP发送音频数据: 1
+I (19395) MQTT: UDP发送音频数据: 1
+I (19395) MQTT: UDP发送音频数据: 1
+I (19405) MQTT: UDP发送音频数据: 1
+I (19405) MQTT: UDP发送音频数据: 76
+I (19405) MQTT: UDP发送音频数据: 1
+I (19415) MQTT: UDP发送音频数据: 1
+I (19415) MQTT: UDP发送音频数据: 1
+I (19425) MQTT: UDP发送音频数据: 1
+I (19425) MQTT: UDP发送音频数据: 1
+I (19425) MQTT: UDP发送音频数据: 99
+I (19435) MQTT: UDP发送音频数据: 132
+I (19435) MQTT: UDP发送音频数据: 122
+I (19435) MQTT: UDP发送音频数据: 113
+I (19445) MQTT: UDP发送音频数据: 114
+I (19445) MQTT: UDP发送音频数据: 103
+I (19455) MQTT: UDP发送音频数据: 126
+I (19455) MQTT: UDP发送音频数据: 113
+I (19455) MQTT: UDP发送音频数据: 91
+I (19465) MQTT: UDP发送音频数据: 95
+I (19465) MQTT: UDP发送音频数据: 123
+I (19465) MQTT: UDP发送音频数据: 100
+I (19475) MQTT: UDP发送音频数据: 83
+I (19475) MQTT: UDP发送音频数据: 80
+I (19485) MQTT: UDP发送音频数据: 76
+I (19485) MQTT: UDP发送音频数据: 1
+I (19485) MQTT: UDP发送音频数据: 1
+I (19495) Protocol: 发送检测到唤醒词消息给服务器
+I (19495) MQTT: --4--发送消息: {"session_id":"5874024e","type":"listen","state":"detect","text":"你好小智"}
+I (19505) Application: Wake word detected: 你好小智
+I (19515) Application: STATE: listening
+I (19515) Protocol: 发送Iot状态消息给服务器
+I (19525) MQTT: --5--发送消息: {"session_id":"5874024e","type":"iot","states":[{"name":"Speaker","state":{"volume":80}},{"name":"Backlight","state":{"brightness":100}}]}
+I (19615) MQTT: UDP发送音频数据: 85
+I (19615) MQTT: --6--收到消息，标题： devices/p2p/GID_test@@@d8_3b_da_4e_00_9c，内容：{"type":"stt","text":"小智","session_id":"5874024e"}
+I (19625) Application: >> 小智
+I (19625) MQTT: --7--收到消息，标题： devices/p2p/GID_test@@@d8_3b_da_4e_00_9c，内容：{"type":"tts","state":"start","session_id":"5874024e"}
+I (19685) Application: STATE: speaking
+I (19695) I2S_IF: Mode 0 need extend bits 64 to 32
+I (19695) I2S_IF: channel mode 0 bits:16/32 channel:2 mask:1
+I (19695) I2S_IF: STD Mode 1 bits:16/32 channel:2 sample_rate:24000 mask:1
+I (19715) Adev_Codec: Open codec device OK
+I (19715) AudioCodec: Set output enable to true
+I (19715) MQTT: UDP发送音频数据: 107
+I (19735) MQTT: UDP发送音频数据: 108
+I (19915) MQTT: --8--收到消息，标题： devices/p2p/GID_test@@@d8_3b_da_4e_00_9c，内容：{"type":"llm","text":"😊","emotion":"happy","session_id":"5874024e"}
+I (20115) MQTT: --9--收到消息，标题： devices/p2p/GID_test@@@d8_3b_da_4e_00_9c，内容：{"type":"tts","state":"sentence_start","text":"你好呀，找我有什么事吗？","session_id":"5874024e"} 
+I (20125) Application: << 你好呀，找我有什么事吗？
+I (20335) UDP: 收到音频数据: 166
+I (20335) UDP: 收到音频数据: 170
+I (20335) UDP: 收到音频数据: 245
+I (20365) UDP: 收到音频数据: 251
+I (20365) UDP: 收到音频数据: 214
+I (20365) UDP: 收到音频数据: 212
+I (20365) UDP: 收到音频数据: 214
+I (20415) UDP: 收到音频数据: 203
+I (20415) UDP: 收到音频数据: 196
+I (20415) UDP: 收到音频数据: 207
+I (20415) UDP: 收到音频数据: 213
+I (20415) UDP: 收到音频数据: 184
+I (20495) UDP: 收到音频数据: 193
+I (20495) UDP: 收到音频数据: 178
+I (20495) UDP: 收到音频数据: 183
+I (20495) UDP: 收到音频数据: 192
+I (20565) UDP: 收到音频数据: 229
+I (20575) UDP: 收到音频数据: 199
+I (20575) UDP: 收到音频数据: 210
+I (20575) UDP: 收到音频数据: 200
+I (20805) UDP: 收到音频数据: 203
+I (20805) UDP: 收到音频数据: 254
+I (20805) UDP: 收到音频数据: 228
+I (20805) UDP: 收到音频数据: 220
+I (21045) UDP: 收到音频数据: 247
+I (21045) UDP: 收到音频数据: 221
+I (21045) UDP: 收到音频数据: 215
+I (21055) UDP: 收到音频数据: 192
+I (21285) UDP: 收到音频数据: 218
+I (21285) UDP: 收到音频数据: 217
+I (21285) UDP: 收到音频数据: 220
+I (21285) UDP: 收到音频数据: 222
+I (21295) UDP: 收到音频数据: 183
+I (21585) UDP: 收到音频数据: 158
+I (21645) UDP: 收到音频数据: 152
+I (21705) UDP: 收到音频数据: 138
+I (21705) UDP: 收到音频数据: 104
+I (21705) UDP: 收到音频数据: 93
+I (21705) UDP: 收到音频数据: 93
+I (21705) UDP: 收到音频数据: 93
+I (21735) MQTT: --10--收到消息，标题： devices/p2p/GID_test@@@d8_3b_da_4e_00_9c，内容：{"type":"tts","state":"sentence_end","text":"你好呀，找我有什么事吗？","session_id":"5874024e"}  
+I (21765) MQTT: --11--收到消息，标题： devices/p2p/GID_test@@@d8_3b_da_4e_00_9c，内容：{"type":"tts","state":"stop","session_id":"5874024e"}
+I (22645) Protocol: 发送开始监听消息给服务器
+I (22645) MQTT: --12--发送消息: {"session_id":"5874024e","type":"listen","state":"start","mode":"auto"}
+I (22645) Application: STATE: listening
+I (22665) AudioProcessor: Error code: -1
+I (22755) MQTT: UDP发送音频数据: 81
+I (22765) MQTT: UDP发送音频数据: 99
+I (22855) MQTT: UDP发送音频数据: 95
+I (22915) MQTT: UDP发送音频数据: 89

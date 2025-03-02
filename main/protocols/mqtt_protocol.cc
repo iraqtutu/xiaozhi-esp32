@@ -2,6 +2,7 @@
 #include "board.h"
 #include "application.h"
 #include "settings.h"
+#include "system_info.h" 
 
 #include <esp_log.h>
 #include <ml307_mqtt.h>
@@ -117,7 +118,12 @@ void MqttProtocol::SendAudio(const std::vector<uint8_t>& data) {
     if (udp_ == nullptr) {
         return;
     }
-    ESP_LOGI(TAG, "UDP发送音频数据: %zu", data.size());
+    ESP_LOGI(TAG, "UDP发送音频数据: %zu,aes_nonce_: %s", data.size(), aes_nonce_.c_str());
+    // for (int i = 0; i < std::min(100, (int)data.size()); i++) {
+    //     printf("%02x ", data[i]);
+    //     if ((i + 1) % 8 == 0) printf("\n");
+    // }
+    // printf("\n");
     std::string nonce(aes_nonce_);
     *(uint16_t*)&nonce[2] = htons(data.size());
     *(uint32_t*)&nonce[12] = htonl(++local_sequence_);
@@ -125,14 +131,25 @@ void MqttProtocol::SendAudio(const std::vector<uint8_t>& data) {
     std::string encrypted;
     encrypted.resize(aes_nonce_.size() + data.size());
     memcpy(encrypted.data(), nonce.data(), nonce.size());
+    // 声明了一个空的 std::string 对象 encrypted，
+    // 使用 resize 方法将其大小调整为 aes_nonce_ 的长度加上 data 的长度
+    // 然后使用 memcpy 函数将 nonce 的内容复制到 encrypted 的开头
+    // 最后，将 data 的内容复制到 encrypted 的末尾
 
     size_t nc_off = 0;
     uint8_t stream_block[16] = {0};
+    ESP_LOGI(TAG, "加密用nonce: %s", nonce.c_str());
     if (mbedtls_aes_crypt_ctr(&aes_ctx_, data.size(), &nc_off, (uint8_t*)nonce.c_str(), stream_block,
         (uint8_t*)data.data(), (uint8_t*)&encrypted[nonce.size()]) != 0) {
         ESP_LOGE(TAG, "Failed to encrypt audio data");
         return;
     }
+    // ESP_LOGI(TAG, "加密后的数据:");
+    // for (int j = 0; j < std::min(100, (int)encrypted.size()); j++) {
+    //     printf("%02x ", encrypted[j]);
+    //     if ((j + 1) % 8 == 0) printf("\n");
+    // }
+    // printf("\n");
     udp_->Send(encrypted);
 }
 
@@ -174,6 +191,7 @@ bool MqttProtocol::OpenAudioChannel() {
     std::string message = "{";
     message += "\"type\":\"hello\",";
     message += "\"version\": 3,";
+    message += "\"device_id\":\"" + SystemInfo::GetMacAddress() + "\",";
     message += "\"transport\":\"udp\",";
     message += "\"audio_params\":{";
     message += "\"format\":\"opus\", \"sample_rate\":16000, \"channels\":1, \"frame_duration\":" + std::to_string(OPUS_FRAME_DURATION_MS);
@@ -213,7 +231,7 @@ bool MqttProtocol::OpenAudioChannel() {
         if (sequence != remote_sequence_ + 1) {
             ESP_LOGW(TAG, "Received audio packet with wrong sequence: %lu, expected: %lu", sequence, remote_sequence_ + 1);
         }
-
+        // 远程数据包解密逻辑
         std::vector<uint8_t> decrypted;
         size_t decrypted_size = data.size() - aes_nonce_.size();
         size_t nc_off = 0;
@@ -221,6 +239,7 @@ bool MqttProtocol::OpenAudioChannel() {
         decrypted.resize(decrypted_size);
         auto nonce = (uint8_t*)data.data();
         auto encrypted = (uint8_t*)data.data() + aes_nonce_.size();
+        ESP_LOGI(TAG, "解密用nonce: %s", nonce);
         int ret = mbedtls_aes_crypt_ctr(&aes_ctx_, decrypted_size, &nc_off, nonce, stream_block, encrypted, (uint8_t*)decrypted.data());
         if (ret != 0) {
             ESP_LOGE(TAG, "Failed to decrypt audio data, ret: %d", ret);
@@ -271,11 +290,15 @@ void MqttProtocol::ParseServerHello(const cJSON* root) {
     udp_port_ = cJSON_GetObjectItem(udp, "port")->valueint;
     auto key = cJSON_GetObjectItem(udp, "key")->valuestring;
     auto nonce = cJSON_GetObjectItem(udp, "nonce")->valuestring;
-
+    ESP_LOGI(TAG, "UDP server: %s, port: %d, nonce: %s", udp_server_.c_str(), udp_port_, nonce);
     // auto encryption = cJSON_GetObjectItem(udp, "encryption")->valuestring;
     // ESP_LOGI(TAG, "UDP server: %s, port: %d, encryption: %s", udp_server_.c_str(), udp_port_, encryption);
+    ESP_LOGI(TAG, "返回的nonce: %s", nonce);
     aes_nonce_ = DecodeHexString(nonce);
+    ESP_LOGI(TAG, "解密后的aes_nonce_: %s", aes_nonce_.c_str());
     mbedtls_aes_init(&aes_ctx_);
+    ESP_LOGI(TAG, "aes key: %s", key);
+    ESP_LOGI(TAG, "aes_nonce_: %s", aes_nonce_.c_str());
     mbedtls_aes_setkey_enc(&aes_ctx_, (const unsigned char*)DecodeHexString(key).c_str(), 128);
     local_sequence_ = 0;
     remote_sequence_ = 0;
