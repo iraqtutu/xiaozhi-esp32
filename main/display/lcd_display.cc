@@ -223,23 +223,38 @@ void LcdDisplay::SetupUI() {
     
     /* Content */
     content_ = lv_obj_create(container_);
-    lv_obj_set_scrollbar_mode(content_, LV_SCROLLBAR_MODE_OFF);
+    // 启用滚动条并设置为自动隐藏模式
+    lv_obj_set_scrollbar_mode(content_, LV_SCROLLBAR_MODE_AUTO);
+    // 启用垂直滚动
+    lv_obj_add_flag(content_, LV_OBJ_FLAG_SCROLLABLE);
+    // 设置滚动方向仅为垂直方向
+    lv_obj_set_scroll_dir(content_, LV_DIR_VER);
+    // 移除滚动捕捉，允许自由滚动
+    lv_obj_clear_flag(content_, LV_OBJ_FLAG_SCROLL_ELASTIC);
+    // 设置内容边距，确保顶部和底部有足够空间
+    lv_obj_set_style_pad_top(content_, 10, 0);
+    lv_obj_set_style_pad_bottom(content_, 10, 0);
+    
     lv_obj_set_style_radius(content_, 0, 0);
     lv_obj_set_width(content_, LV_HOR_RES);
     lv_obj_set_flex_grow(content_, 1);
 
     lv_obj_set_flex_flow(content_, LV_FLEX_FLOW_COLUMN); // 垂直布局（从上到下）
-    lv_obj_set_flex_align(content_, LV_FLEX_ALIGN_CENTER, LV_FLEX_ALIGN_CENTER, LV_FLEX_ALIGN_SPACE_EVENLY); // 子对象居中对齐，等距分布
+    lv_obj_set_flex_align(content_, LV_FLEX_ALIGN_START, LV_FLEX_ALIGN_CENTER, LV_FLEX_ALIGN_START); // 修改为顶部对齐
 
     emotion_label_ = lv_label_create(content_);
     lv_obj_set_style_text_font(emotion_label_, &font_awesome_30_4, 0);
     lv_label_set_text(emotion_label_, FONT_AWESOME_AI_CHIP);
+    // 确保表情图标有足够的上边距
+    lv_obj_set_style_margin_top(emotion_label_, 20, 0);
 
     chat_message_label_ = lv_label_create(content_);
     lv_label_set_text(chat_message_label_, "");
     lv_obj_set_width(chat_message_label_, LV_HOR_RES * 0.9); // 限制宽度为屏幕宽度的 90%
     lv_label_set_long_mode(chat_message_label_, LV_LABEL_LONG_WRAP); // 设置为自动换行模式
     lv_obj_set_style_text_align(chat_message_label_, LV_TEXT_ALIGN_CENTER, 0); // 设置文本居中对齐
+    // 添加足够的下边距，确保内容可以完全滚动
+    lv_obj_set_style_margin_bottom(chat_message_label_, 20, 0);
 
     /* Status bar */
     lv_obj_set_flex_flow(status_bar_, LV_FLEX_FLOW_ROW);
