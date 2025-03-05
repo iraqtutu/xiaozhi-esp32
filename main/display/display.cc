@@ -215,6 +215,7 @@ void Display::SetChatMessage(const std::string &role, const std::string &content
         return;
     }
     lv_label_set_text(chat_message_label_, content.c_str());
+    lv_obj_scroll_to_y(chat_message_label_, 0, LV_ANIM_OFF);
 }
 
 void Display::SetBacklight(uint8_t brightness) {

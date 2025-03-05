@@ -55,6 +55,8 @@ public:
     virtual void SetIcon(const char* icon) override;
     virtual void SetBacklight(uint8_t brightness) override;
     bool IsOn() const { return is_on_; }
+
+    void SetChatMessage(const std::string &role, const std::string &content) override;
 };
 
 #endif // LCD_DISPLAY_H

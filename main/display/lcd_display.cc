@@ -60,7 +60,7 @@ LcdDisplay::LcdDisplay(esp_lcd_panel_io_handle_t panel_io, esp_lcd_panel_handle_
         .io_handle = panel_io_,
         .panel_handle = panel_,
         .control_handle = nullptr,
-        .buffer_size = static_cast<uint32_t>(width_ * 10),
+        .buffer_size = static_cast<uint32_t>(width_ * 20),
         .double_buffer = false,
         .trans_size = 0,
         .hres = static_cast<uint32_t>(width_),
@@ -231,7 +231,15 @@ void LcdDisplay::SetupUI() {
     lv_obj_set_scroll_dir(content_, LV_DIR_VER);
     // 移除滚动捕捉，允许自由滚动
     lv_obj_clear_flag(content_, LV_OBJ_FLAG_SCROLL_ELASTIC);
-    // 设置内容边距，确保顶部和底部有足够空间
+    // 优化滚动性能
+    lv_obj_add_flag(content_, LV_OBJ_FLAG_SCROLL_MOMENTUM); // 添加动量滚动
+    lv_obj_set_scroll_snap_y(content_, LV_SCROLL_SNAP_NONE); // 确保没有滚动捕捉
+    // 减少动画时间以提高响应速度
+    lv_obj_set_style_anim_time(content_, 150, 0); // 默认可能是400ms
+    
+    // 优化渲染性能
+    lv_obj_set_style_opa(content_, LV_OPA_COVER, 0); // 确保不透明度为100%
+    
     lv_obj_set_style_pad_top(content_, 10, 0);
     lv_obj_set_style_pad_bottom(content_, 10, 0);
     
@@ -255,6 +263,10 @@ void LcdDisplay::SetupUI() {
     lv_obj_set_style_text_align(chat_message_label_, LV_TEXT_ALIGN_CENTER, 0); // 设置文本居中对齐
     // 添加足够的下边距，确保内容可以完全滚动
     lv_obj_set_style_margin_bottom(chat_message_label_, 20, 0);
+
+    // 对于文本标签，也可以优化渲染
+    lv_obj_set_style_text_line_space(chat_message_label_, 2, 0); // 减少行间距
+    lv_obj_set_style_opa(chat_message_label_, LV_OPA_COVER, 0);
 
     /* Status bar */
     lv_obj_set_flex_flow(status_bar_, LV_FLEX_FLOW_ROW);
@@ -344,6 +356,8 @@ void LcdDisplay::SetIcon(const char* icon) {
     }
     lv_obj_set_style_text_font(emotion_label_, &font_awesome_30_4, 0);
     lv_label_set_text(emotion_label_, icon);
+    // 确保内容定位到顶部
+    lv_obj_scroll_to_y(content_, 0, LV_ANIM_OFF);
 }
 
 void LcdDisplay::TurnOn() {
@@ -364,4 +378,13 @@ void LcdDisplay::TurnOff() {
     ESP_ERROR_CHECK(esp_lcd_panel_disp_on_off(panel_, false));
     SetBacklight(0);
     is_on_ = false;
+}
+
+void LcdDisplay::SetChatMessage(const std::string &role, const std::string &content) {
+    DisplayLockGuard lock(this);
+    if (chat_message_label_ == nullptr) {
+        return;
+    }
+    lv_label_set_text(chat_message_label_, content.c_str());
+    lv_obj_scroll_to_y(content_, 0, LV_ANIM_OFF);
 }
