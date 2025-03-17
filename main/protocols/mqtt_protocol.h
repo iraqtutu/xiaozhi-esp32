@@ -33,7 +33,7 @@ public:
 
 private:
     EventGroupHandle_t event_group_handle_;
-    int message_counter_ = 0;
+
     std::string endpoint_;
     std::string client_id_;
     std::string username_;
@@ -50,7 +50,7 @@ private:
     uint32_t local_sequence_;
     uint32_t remote_sequence_;
 
-    bool StartMqttClient();
+    bool StartMqttClient(bool report_error=false);
     void ParseServerHello(const cJSON* root);
     std::string DecodeHexString(const std::string& hex_string);
 
