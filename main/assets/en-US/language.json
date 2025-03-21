@@ -19,7 +19,7 @@
         "CONNECTING": "Connecting...",
         "CONNECTION_SUCCESSFUL": "Connection Successful",
         "CONNECTED_TO": "Connected to ",
-
+        "PAUSED": "Paused",
         "LISTENING": "Listening...",
         "SPEAKING": "Speaking...",
 

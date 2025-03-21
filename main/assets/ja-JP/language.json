@@ -18,7 +18,7 @@
         "CONNECT_TO": "接続先 ",
         "CONNECTING": "接続中...",
         "CONNECTED_TO": "接続完了 ",
-
+        "PAUSED": "一時停止中",
         "LISTENING": "リスニング中...",
         "SPEAKING": "話しています...",
 

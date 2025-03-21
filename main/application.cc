@@ -64,6 +64,7 @@ Application::~Application() {
 }
 
 void Application::CheckNewVersion() {
+    ESP_LOGI(TAG, "Checking for new version...");
     auto& board = Board::GetInstance();
     auto display = board.GetDisplay();
     // Check if there is a new firmware version available
@@ -359,21 +360,19 @@ void Application::Start() {
 
     /* Wait for the network to be ready */
     board.StartNetwork();
-        // 等待 IPv6 地址分配和网络稳定
-    
-
+    // 等待 IPv6 地址分配和网络稳定
     ESP_LOGI(TAG, "等待网络就绪...");
-    vTaskDelay(pdMS_TO_TICKS(3000)); // 给网络栈更多时间来稳定
+    vTaskDelay(pdMS_TO_TICKS(100000)); // 给网络栈更多时间来稳定
     
     // 在网络初始化后初始化 OTA 功能
-    for (int i = 0; i < 3; i++) {
-        if (ota_.Init()) {
-            ESP_LOGI(TAG, "OTA 初始化成功");
-            break;
-        }
-        ESP_LOGW(TAG, "OTA 初始化失败，重试中... (%d/3)", i + 1);
-        vTaskDelay(pdMS_TO_TICKS(2000));
-    }
+    // for (int i = 0; i < 3; i++) {
+    //     if (ota_.Init()) {
+    //         ESP_LOGI(TAG, "OTA 初始化成功");
+    //         break;
+    //     }
+    //     ESP_LOGW(TAG, "OTA 初始化失败，重试中... (%d/3)", i + 1);
+    //     vTaskDelay(pdMS_TO_TICKS(2000));
+    // }
 
     // Initialize the protocol
     display->SetStatus(Lang::Strings::LOADING_PROTOCOL);

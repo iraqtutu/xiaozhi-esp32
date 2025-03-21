@@ -13,7 +13,7 @@ class LcdDisplay : public Display {
 protected:
     esp_lcd_panel_io_handle_t panel_io_ = nullptr;
     esp_lcd_panel_handle_t panel_ = nullptr;
-    bool is_on_ = true;
+    
     lv_draw_buf_t draw_buf_;
     lv_obj_t* status_bar_ = nullptr;
     lv_obj_t* content_ = nullptr;
@@ -35,7 +35,13 @@ public:
     ~LcdDisplay();
     virtual void SetEmotion(const char* emotion) override;
     virtual void SetIcon(const char* icon) override;
-    bool IsOn() const { return is_on_; }
+#if CONFIG_USE_WECHAT_MESSAGE_STYLE
+    virtual void SetChatMessage(const char* role, const char* content) override; 
+#endif  
+
+    // Add theme switching function
+    virtual void SetTheme(const std::string& theme_name) override;
+    virtual std::string GetTheme() override;
 };
 
 // RGB LCD显示器

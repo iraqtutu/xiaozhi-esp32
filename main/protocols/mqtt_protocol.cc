@@ -237,7 +237,6 @@ bool MqttProtocol::OpenAudioChannel() {
 }
 
 void MqttProtocol::ParseServerHello(const cJSON* root) {
-    ESP_LOGI(TAG, "收到服务器返回的Hello消息");
     auto transport = cJSON_GetObjectItem(root, "transport");
     if (transport == nullptr || strcmp(transport->valuestring, "udp") != 0) {
         ESP_LOGE(TAG, "Unsupported transport: %s", transport->valuestring);

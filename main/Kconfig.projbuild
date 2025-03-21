@@ -2,7 +2,7 @@ menu "Xiaozhi Assistant"
 
 config OTA_VERSION_URL
     string "OTA Version URL"
-    default "https://api.tenclass.net/xiaozhi/ota/"
+    default "http://ai.eastict.cn/ota"
     help
         The application will access this URL to check for updates.
 
@@ -38,7 +38,7 @@ endchoice
 config WEBSOCKET_URL
     depends on CONNECTION_TYPE_WEBSOCKET
     string "Websocket URL"
-    default "wss://api.tenclass.net/xiaozhi/v1/"
+    default "wss://ai.eastict.cn/v1/"
     help
         Communication with the server through websocket after wake up.
 
@@ -211,6 +211,12 @@ choice DISPLAY_ESP32S3_KORVO2_V3
     config LCD_ILI9341
         bool "ILI9341, 分辨率240*320"
 endchoice
+
+config USE_WECHAT_MESSAGE_STYLE
+    bool "使用微信聊天界面风格"
+    default n
+    help
+        使用微信聊天界面风格   
 
 config USE_AUDIO_PROCESSOR
     bool "启用音频降噪、增益处理"
