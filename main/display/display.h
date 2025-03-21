@@ -31,8 +31,8 @@ public:
     inline int width() const { return width_; }
     inline int height() const { return height_; }
     bool IsOn() const { return is_on_; }
-    void TurnOn() { is_on_ = true; }
-    void TurnOff() { is_on_ = false; }
+    virtual void TurnOn() { is_on_ = true; }
+    virtual void TurnOff() { is_on_ = false; }
 
 protected:
     int width_ = 0;

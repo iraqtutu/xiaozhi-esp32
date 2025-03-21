@@ -920,6 +920,7 @@ void LcdDisplay::TurnOn() {
         return;
     }
     ESP_ERROR_CHECK(esp_lcd_panel_disp_on_off(panel_, true));
+    SetBacklight(100);
     is_on_ = true;
 }
 
@@ -929,5 +930,22 @@ void LcdDisplay::TurnOff() {
         return;
     }
     ESP_ERROR_CHECK(esp_lcd_panel_disp_on_off(panel_, false));
+    SetBacklight(0);
     is_on_ = false;
+}
+
+void LcdDisplay::SetBacklight(uint8_t brightness) {
+    if (backlight_pin_ == GPIO_NUM_NC) {
+        return;
+    }
+
+    if (brightness > 100) {
+        brightness = 100;
+    }
+
+    ESP_LOGI(TAG, "Setting LCD backlight: %d%%", brightness);
+    // LEDC resolution set to 10bits, thus: 100% = 1023
+    uint32_t duty_cycle = (1023 * brightness) / 100;
+    ESP_ERROR_CHECK(ledc_set_duty(LEDC_LOW_SPEED_MODE, LCD_LEDC_CH, duty_cycle));
+    ESP_ERROR_CHECK(ledc_update_duty(LEDC_LOW_SPEED_MODE, LCD_LEDC_CH));
 }
