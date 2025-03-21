@@ -32,14 +32,50 @@ public:
     }
 };
 
+class Ft6336 : public I2cDevice {
+public:
+    struct TouchPoint_t {
+        int num = 0;
+        int x = -1;
+        int y = -1;
+    };
+    
+    Ft6336(i2c_master_bus_handle_t i2c_bus, uint8_t addr) : I2cDevice(i2c_bus, addr) {
+        uint8_t chip_id = ReadReg(0xA3);
+        ESP_LOGI(TAG, "Get chip ID: 0x%02X", chip_id);
+        read_buffer_ = new uint8_t[6];
+    }
+
+    ~Ft6336() {
+        delete[] read_buffer_;
+    }
+
+    void UpdateTouchPoint() {
+        ReadRegs(0x02, read_buffer_, 6);
+        tp_.num = read_buffer_[0] & 0x0F;
+        tp_.x = ((read_buffer_[1] & 0x0F) << 8) | read_buffer_[2];
+        tp_.y = ((read_buffer_[3] & 0x0F) << 8) | read_buffer_[4];
+    }
+
+    const TouchPoint_t& GetTouchPoint() {
+        return tp_;
+    }
+
+private:
+    uint8_t* read_buffer_ = nullptr;
+    TouchPoint_t tp_;
+};
+
 
 class LichuangDevBoard : public WifiBoard {
 private:
     i2c_master_bus_handle_t i2c_bus_;
     i2c_master_dev_handle_t pca9557_handle_;
+    esp_timer_handle_t touchpad_timer_;
     Button boot_button_;
     LcdDisplay* display_;
     Pca9557* pca9557_;
+    Ft6336* ft6336_;
 
     void InitializeI2c() {
         // Initialize I2C peripheral
@@ -60,6 +96,116 @@ private:
         // Initialize PCA9557
         pca9557_ = new Pca9557(i2c_bus_, 0x19);
     }
+
+
+    // 当LVGL需要获取触摸屏状态时，会调用该函数
+    // 该函数需要实现通过硬件接口获取触摸屏状态，并返回给LVGL
+    //
+    static void lv_touchpad_read(lv_indev_t *drv, lv_indev_data_t *data) {
+        // 获取板子实例，并获得触摸屏对象
+       auto &board = (LichuangDevBoard&) Board::GetInstance();
+       Ft6336* touchpad = board.GetTouchpad();
+
+       // 更新触摸点数据
+       touchpad->UpdateTouchPoint();
+       const auto &tp = touchpad->GetTouchPoint();
+       
+       int x = tp.x;
+       int y = tp.y;
+       
+       // 根据LVGL显示配置对触摸坐标进行转换
+   #if defined(DISPLAY_SWAP_XY) && DISPLAY_SWAP_XY
+       int tmp = x;
+       x = y;
+       y = tmp;
+   #endif
+   #if defined(DISPLAY_MIRROR_X) && DISPLAY_MIRROR_X
+       x = DISPLAY_WIDTH - x;
+   #endif
+   // 如果屏幕镜像已经在显示配置中完成，此处可注释掉对 Y 轴的处理
+//    #if defined(DISPLAY_MIRROR_Y) && DISPLAY_MIRROR_Y
+      y = DISPLAY_HEIGHT - y;
+//    #endif
+
+       // 根据是否检测到触摸来设置LVGL的触摸状态
+       if (tp.num > 0) {
+           data->point.x = x;
+           data->point.y = y;
+           data->state = LV_INDEV_STATE_PR;  // 按下状态
+       } else {
+           data->state = LV_INDEV_STATE_REL; // 松开状态
+       }
+    }
+
+    // 该代码不再使用
+    static void touchpad_timer_callback(void* arg) {
+        auto& board = (LichuangDevBoard&)Board::GetInstance();
+        auto touchpad = board.GetTouchpad();
+        static bool was_touched = false;
+        static int64_t touch_start_time = 0;
+        const int64_t TOUCH_THRESHOLD_MS = 500;  // 触摸时长阈值，超过500ms视为长按
+        
+        touchpad->UpdateTouchPoint();
+        auto touch_point = touchpad->GetTouchPoint();
+        
+        // 检测触摸开始
+        if (touch_point.num > 0 && !was_touched) {
+            was_touched = true;
+            touch_start_time = esp_timer_get_time() / 1000; // 转换为毫秒
+        } 
+
+        else if (touch_point.num == 0 && was_touched) {
+            was_touched = false;
+            int64_t touch_duration = (esp_timer_get_time() / 1000) - touch_start_time;
+            
+            // 只有短触才触发
+            if (touch_duration < TOUCH_THRESHOLD_MS) {
+                auto& app = Application::GetInstance();
+                //-----这里屏幕灭就点亮屏幕进入聊天状态，屏幕亮则切换暂停
+                auto display = Board::GetInstance().GetDisplay();
+                auto lcd_display = static_cast<LcdDisplay*>(display);
+                if (lcd_display && lcd_display->IsOn()) {
+                    app.TogglePause();
+                } else {
+                    lcd_display->TurnOn();
+                    // 如果当前处于空闲状态，则开始监听
+                    if(app.GetDeviceState() == kDeviceStateIdle) {
+                        app.StartListening();
+                    }
+                }
+            }
+        }
+    }
+
+    void InitializeFt6336TouchPad() {
+        ESP_LOGI(TAG, "Init FT6336");
+        ft6336_ = new Ft6336(i2c_bus_, 0x38);
+        
+        // 创建定时器，10ms 间隔
+        esp_timer_create_args_t timer_args = {
+            .callback = touchpad_timer_callback,
+            .arg = NULL,
+            .dispatch_method = ESP_TIMER_TASK,
+            .name = "touchpad_timer",
+            .skip_unhandled_events = true,
+        };
+        
+        ESP_ERROR_CHECK(esp_timer_create(&timer_args, &touchpad_timer_));
+        ESP_ERROR_CHECK(esp_timer_start_periodic(touchpad_timer_, 10 * 1000)); // 10ms = 10000us
+    }
+
+    // 【新增】在 LichuangDevBoard 类中添加注册LVGL触摸板的方法
+    // 在 LichuangDevBoard 类中添加注册LVGL触摸板的方法 (LVGL v9.2.2)
+    void RegisterLvglTouchpad() {
+        // 创建输入设备对象
+        lv_indev_t * indev = lv_indev_create();
+        // 设置输入设备类型为 POINTER（指针/触摸输入设备）
+        lv_indev_set_type(indev, LV_INDEV_TYPE_POINTER);
+        // 设置输入设备的读取回调函数
+        lv_indev_set_read_cb(indev, lv_touchpad_read);
+        ESP_LOGI(TAG, "CCJ LVGL触摸板注册完成");
+    }
+
 
     void InitializeSpi() {
         spi_bus_config_t buscfg = {};
@@ -143,9 +289,11 @@ public:
         InitializeI2c();
         InitializeSpi();
         InitializeSt7789Display();
+        InitializeFt6336TouchPad();
         InitializeButtons();
         InitializeIot();
         GetBacklight()->RestoreBrightness();
+        RegisterLvglTouchpad();
     }
 
     virtual AudioCodec* GetAudioCodec() override {
@@ -172,6 +320,11 @@ public:
     virtual Backlight* GetBacklight() override {
         static PwmBacklight backlight(DISPLAY_BACKLIGHT_PIN, DISPLAY_BACKLIGHT_OUTPUT_INVERT);
         return &backlight;
+    }
+
+    // 获取触摸屏对象
+    Ft6336* GetTouchpad() {
+        return ft6336_;
     }
 };
 

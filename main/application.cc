@@ -63,6 +63,24 @@ Application::~Application() {
     vEventGroupDelete(event_group_);
 }
 
+void Application::TurnScreenOn() {
+    if (!screen_is_on_) {
+        auto display = Board::GetInstance().GetDisplay();
+        display->TurnOn();
+        screen_is_on_ = true;
+        ESP_LOGI(TAG, "屏幕已打开");
+    }
+}
+
+void Application::TurnScreenOff() {
+    if (screen_is_on_) {
+        auto display = Board::GetInstance().GetDisplay();
+        display->TurnOff();
+        screen_is_on_ = false;
+        ESP_LOGI(TAG, "屏幕已关闭 (空闲超时)");
+    }
+}
+
 void Application::CheckNewVersion() {
     ESP_LOGI(TAG, "Checking for new version...");
     auto& board = Board::GetInstance();
@@ -459,6 +477,9 @@ void Application::Start() {
         }
     });
     protocol_->Start();
+        // 等待 IPv6 地址分配和网络稳定
+    ESP_LOGI(TAG, "等待网络就绪...");
+    vTaskDelay(pdMS_TO_TICKS(10000)); // 给网络栈更多时间来稳定
 
     // Check for new firmware version or get the MQTT broker address
     ota_.SetCheckVersionUrl(CONFIG_OTA_VERSION_URL);
@@ -543,6 +564,14 @@ void Application::Start() {
 
 void Application::OnClockTimer() {
     clock_ticks_++;
+
+    if (screen_is_on_ && (device_state_ == kDeviceStateIdle || device_state_ == kDeviceStatePaused)) {
+        if (clock_ticks_ >= idle_timeout_ticks_) {
+            Schedule([this]() {
+                TurnScreenOff();
+            });
+        }
+    }
 
     // Print the debug info every 10 seconds
     if (clock_ticks_ % 10 == 0) {
@@ -716,11 +745,11 @@ void Application::AbortSpeaking(AbortReason reason) {
 }
 
 void Application::SetDeviceState(DeviceState state) {
+    clock_ticks_ = 0;
     if (device_state_ == state) {
         return;
     }
-    
-    clock_ticks_ = 0;
+    TurnScreenOn();
     auto previous_state = device_state_;
     device_state_ = state;
     ESP_LOGI(TAG, "STATE: %s", STATE_STRINGS[device_state_]);

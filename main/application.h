@@ -72,6 +72,8 @@ public:
     void WakeWordInvoke(const std::string& wake_word);
     void PlaySound(const std::string_view& sound);
     bool CanEnterSleepMode();
+    void TurnScreenOn();
+    void TurnScreenOff();
 
 private:
     Application();
@@ -96,6 +98,8 @@ private:
     bool voice_detected_ = false;
     int clock_ticks_ = 0;
     bool is_paused_ = false;  // 新增暂停标志
+    bool screen_is_on_ = true;
+    int idle_timeout_ticks_ = 60; // 60秒超时息屏
 
     // Audio encode / decode
     BackgroundTask* background_task_ = nullptr;

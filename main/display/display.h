@@ -30,10 +30,14 @@ public:
 
     inline int width() const { return width_; }
     inline int height() const { return height_; }
+    bool IsOn() const { return is_on_; }
+    void TurnOn() { is_on_ = true; }
+    void TurnOff() { is_on_ = false; }
 
 protected:
     int width_ = 0;
     int height_ = 0;
+    bool is_on_ = true;
     
     esp_pm_lock_handle_t pm_lock_ = nullptr;
     lv_display_t *display_ = nullptr;
