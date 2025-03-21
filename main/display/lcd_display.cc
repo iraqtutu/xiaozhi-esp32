@@ -912,3 +912,22 @@ std::string LcdDisplay::GetTheme() {
     
     return theme;
 }
+
+
+void LcdDisplay::TurnOn() {
+    DisplayLockGuard lock(this);
+    if (is_on_) {
+        return;
+    }
+    ESP_ERROR_CHECK(esp_lcd_panel_disp_on_off(panel_, true));
+    is_on_ = true;
+}
+
+void LcdDisplay::TurnOff() {
+    DisplayLockGuard lock(this);
+    if (!is_on_) {
+        return;
+    }
+    ESP_ERROR_CHECK(esp_lcd_panel_disp_on_off(panel_, false));
+    is_on_ = false;
+}
