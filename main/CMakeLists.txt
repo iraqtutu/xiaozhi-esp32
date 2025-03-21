@@ -202,3 +202,5 @@ add_custom_command(
 add_custom_target(lang_header ALL
     DEPENDS ${LANG_HEADER}
 )
+
+target_compile_options(${COMPONENT_LIB} PRIVATE -O1)  # 降低优化级别
