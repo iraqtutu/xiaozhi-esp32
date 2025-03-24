@@ -66,6 +66,10 @@ Application::~Application() {
 void Application::TurnScreenOn() {
     if (!screen_is_on_) {
         auto display = Board::GetInstance().GetDisplay();
+        auto backlight = Board::GetInstance().GetBacklight();
+        if (backlight) {
+            backlight->SetBrightness(brightness_, false);
+        }
         display->TurnOn();
         screen_is_on_ = true;
         ESP_LOGI(TAG, "屏幕已打开");
@@ -75,6 +79,11 @@ void Application::TurnScreenOn() {
 void Application::TurnScreenOff() {
     if (screen_is_on_) {
         auto display = Board::GetInstance().GetDisplay();
+        auto backlight = Board::GetInstance().GetBacklight();
+        if (backlight) {
+            brightness_ = backlight->brightness();
+            backlight->SetBrightness(0, false);
+        }
         display->TurnOff();
         screen_is_on_ = false;
         ESP_LOGI(TAG, "屏幕已关闭 (空闲超时)");
@@ -570,6 +579,14 @@ void Application::OnClockTimer() {
             Schedule([this]() {
                 TurnScreenOff();
             });
+        }
+    }
+
+    // 如果是Listening状态，则每10秒打印一次debug信息
+    if (device_state_ == kDeviceStateListening) {
+        if (clock_ticks_ >= idle_timeout_ticks_) {
+            ESP_LOGI(TAG, "持续Listening状态超过%d秒，切换到Idle状态", idle_timeout_ticks_);
+            SetDeviceState(kDeviceStateIdle);
         }
     }
 
