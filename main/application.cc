@@ -544,6 +544,7 @@ void Application::Start() {
                 std::vector<uint8_t> opus;
                 // Encode and send the wake word data to the server
                 while (wake_word_detect_.GetWakeWordOpus(opus)) {
+                    ESP_LOGI(TAG, "Send wake word data to server");
                     protocol_->SendAudio(opus);
                 }
                 // Set the chat state to wake word detected
