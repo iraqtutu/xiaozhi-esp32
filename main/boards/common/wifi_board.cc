@@ -41,7 +41,7 @@ void WifiBoard::EnterWifiConfigMode() {
     application.SetDeviceState(kDeviceStateWifiConfiguring);
 
     auto& wifi_ap = WifiConfigurationAp::GetInstance();
-    // wifi_ap.SetLanguage(Lang::CODE);
+    wifi_ap.SetLanguage(Lang::CODE);
     wifi_ap.SetSsidPrefix("Xiaozhi");
     wifi_ap.Start();
 
@@ -65,7 +65,6 @@ void WifiBoard::EnterWifiConfigMode() {
 }
 
 void WifiBoard::StartNetwork() {
-    ESP_LOGI(TAG, "StartNetwork");
     // User can press BOOT button while starting to enter WiFi configuration mode
     if (wifi_config_mode_) {
         EnterWifiConfigMode();
@@ -75,7 +74,6 @@ void WifiBoard::StartNetwork() {
     // If no WiFi SSID is configured, enter WiFi configuration mode
     auto& ssid_manager = SsidManager::GetInstance();
     auto ssid_list = ssid_manager.GetSsidList();
-    ESP_LOGI(TAG, "ssid_list.size() = %d", ssid_list.size());
     if (ssid_list.empty()) {
         wifi_config_mode_ = true;
         EnterWifiConfigMode();
@@ -100,11 +98,10 @@ void WifiBoard::StartNetwork() {
         notification += ssid;
         display->ShowNotification(notification.c_str(), 30000);
     });
-    ESP_LOGI(TAG, "Start wifi station");
     wifi_station.Start();
 
     // Try to connect to WiFi, if failed, launch the WiFi configuration AP
-    if (!wifi_station.WaitForConnected(100 * 1000)) {
+    if (!wifi_station.WaitForConnected(60 * 1000)) {
         wifi_station.Stop();
         wifi_config_mode_ = true;
         EnterWifiConfigMode();

@@ -51,7 +51,6 @@ bool Ota::CheckVersion() {
 
     http->SetHeader("Content-Type", "application/json");
     std::string method = post_data_.length() > 0 ? "POST" : "GET";
-    ESP_LOGI(TAG, "Checking version from %s, method: %s, post_data: %s", check_version_url_.c_str(), method.c_str(), post_data_.c_str());
     if (!http->Open(method, check_version_url_, post_data_)) {
         ESP_LOGE(TAG, "Failed to open HTTP connection");
         delete http;

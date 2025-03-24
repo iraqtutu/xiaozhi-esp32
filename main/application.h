@@ -100,7 +100,8 @@ private:
     bool is_paused_ = false;  // 新增暂停标志
     bool screen_is_on_ = true;
     int idle_timeout_ticks_ = 60; // 60秒超时息屏
-
+    int brightness_ = 100;
+    
     // Audio encode / decode
     BackgroundTask* background_task_ = nullptr;
     std::chrono::steady_clock::time_point last_output_time_;

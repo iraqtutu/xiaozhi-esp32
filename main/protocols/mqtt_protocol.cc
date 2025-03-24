@@ -2,7 +2,7 @@
 #include "board.h"
 #include "application.h"
 #include "settings.h"
-#include "system_info.h" 
+#include "system_info.h"
 
 #include <esp_log.h>
 #include <ml307_mqtt.h>
@@ -192,6 +192,7 @@ bool MqttProtocol::OpenAudioChannel() {
     }
     udp_ = Board::GetInstance().CreateUdp();
     udp_->OnMessage([this](const std::string& data) {
+        ESP_LOGI(TAG, "Received audio packet, size: %zu", data.size());
         if (data.size() < sizeof(aes_nonce_)) {
             ESP_LOGE(TAG, "Invalid audio packet size: %zu", data.size());
             return;
@@ -269,7 +270,7 @@ void MqttProtocol::ParseServerHello(const cJSON* root) {
     auto nonce = cJSON_GetObjectItem(udp, "nonce")->valuestring;
 
     // auto encryption = cJSON_GetObjectItem(udp, "encryption")->valuestring;
-    // ESP_LOGI(TAG, "UDP server: %s, port: %d, encryption: %s", udp_server_.c_str(), udp_port_, encryption);
+    ESP_LOGI(TAG, "UDP server: %s, port: %d", udp_server_.c_str(), udp_port_);
     aes_nonce_ = DecodeHexString(nonce);
     mbedtls_aes_init(&aes_ctx_);
     mbedtls_aes_setkey_enc(&aes_ctx_, (const unsigned char*)DecodeHexString(key).c_str(), 128);

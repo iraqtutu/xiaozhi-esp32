@@ -13,7 +13,7 @@ class LcdDisplay : public Display {
 protected:
     esp_lcd_panel_io_handle_t panel_io_ = nullptr;
     esp_lcd_panel_handle_t panel_ = nullptr;
-
+    
     lv_draw_buf_t draw_buf_;
     lv_obj_t* status_bar_ = nullptr;
     lv_obj_t* content_ = nullptr;
@@ -22,7 +22,7 @@ protected:
 
     DisplayFonts fonts_;
 
-    virtual void SetupUI();
+    void SetupUI();
     virtual bool Lock(int timeout_ms = 0) override;
     virtual void Unlock() override;
 
@@ -41,10 +41,8 @@ public:
 
     // Add theme switching function
     virtual void SetTheme(const std::string& theme_name) override;
-    virtual std::string GetTheme() override;
-
-    virtual void TurnOn() override;
-    virtual void TurnOff() override;
+    void TurnOn() override;  // 添加此行
+    void TurnOff() override; // 添加此行
 };
 
 // RGB LCD显示器
