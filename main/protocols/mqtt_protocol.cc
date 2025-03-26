@@ -40,10 +40,12 @@ bool MqttProtocol::StartMqttClient(bool report_error) {
 
     Settings settings("mqtt", false);
     endpoint_ = settings.GetString("endpoint");
+    port_ = settings.GetInt("port");
     client_id_ = settings.GetString("client_id");
     username_ = settings.GetString("username");
     password_ = settings.GetString("password");
     publish_topic_ = settings.GetString("publish_topic");
+    subscribe_topic_ = settings.GetString("subscribe_topic");
 
     if (endpoint_.empty()) {
         ESP_LOGW(TAG, "MQTT endpoint is not specified");
@@ -91,10 +93,12 @@ bool MqttProtocol::StartMqttClient(bool report_error) {
     });
 
     ESP_LOGI(TAG, "Connecting to endpoint %s", endpoint_.c_str());
-    if (!mqtt_->Connect(endpoint_, 8883, client_id_, username_, password_)) {
+    if (!mqtt_->Connect(endpoint_, port_, client_id_, username_, password_)) {
         ESP_LOGE(TAG, "Failed to connect to endpoint");
         SetError(Lang::Strings::SERVER_NOT_CONNECTED);
         return false;
+    }else{
+        mqtt_->Subscribe(subscribe_topic_);
     }
 
     ESP_LOGI(TAG, "Connected to endpoint");
