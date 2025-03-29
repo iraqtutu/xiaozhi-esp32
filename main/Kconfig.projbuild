@@ -2,7 +2,7 @@ menu "Xiaozhi Assistant"
 
 config OTA_VERSION_URL
     string "OTA Version URL"
-    default "http://ai.eastict.cn/ota"
+    default "http://115.190.88.174/ota"
     help
         The application will access this URL to check for updates.
 

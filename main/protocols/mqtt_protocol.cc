@@ -41,6 +41,9 @@ bool MqttProtocol::StartMqttClient(bool report_error) {
     Settings settings("mqtt", false);
     endpoint_ = settings.GetString("endpoint");
     port_ = settings.GetInt("port");
+    if (port_ == 0) {
+        port_ = 38083;
+    }
     client_id_ = settings.GetString("client_id");
     username_ = settings.GetString("username");
     password_ = settings.GetString("password");
@@ -95,6 +98,8 @@ bool MqttProtocol::StartMqttClient(bool report_error) {
     ESP_LOGI(TAG, "Connecting to endpoint %s", endpoint_.c_str());
     if (!mqtt_->Connect(endpoint_, port_, client_id_, username_, password_)) {
         ESP_LOGE(TAG, "Failed to connect to endpoint");
+        // ESP_LOGE(TAG, "Error: %s", mqtt_->GetError().c_str());
+        ESP_LOGE(TAG, "Endpoint: %s, port: %d, client_id: %s, username: %s, password: %s", endpoint_.c_str(), port_, client_id_.c_str(), username_.c_str(), password_.c_str());
         SetError(Lang::Strings::SERVER_NOT_CONNECTED);
         return false;
     }else{

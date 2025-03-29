@@ -95,6 +95,10 @@ bool Ota::CheckVersion() {
                 if (settings.GetString(item->string) != item->valuestring) {
                     settings.SetString(item->string, item->valuestring);
                 }
+            }else if (item->type == cJSON_Number) {
+                if (settings.GetInt(item->string) != item->valueint) {
+                    settings.SetInt(item->string, item->valueint);
+                }
             }
         }
         has_mqtt_config_ = true;
