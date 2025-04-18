@@ -42,7 +42,7 @@ bool MqttProtocol::StartMqttClient(bool report_error) {
     endpoint_ = settings.GetString("endpoint");
     port_ = settings.GetInt("port");
     if (port_ == 0) {
-        port_ = 38083;
+        port_ = 8883;
     }
     client_id_ = settings.GetString("client_id");
     username_ = settings.GetString("username");
@@ -103,7 +103,9 @@ bool MqttProtocol::StartMqttClient(bool report_error) {
         SetError(Lang::Strings::SERVER_NOT_CONNECTED);
         return false;
     }else{
-        mqtt_->Subscribe(subscribe_topic_);
+        if(!subscribe_topic_.empty()){
+            mqtt_->Subscribe(subscribe_topic_);
+        }
     }
 
     ESP_LOGI(TAG, "Connected to endpoint");
